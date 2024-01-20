@@ -15,7 +15,6 @@ const Markets = (props) => {
   useEffect(() => {
     const fetchCoins = async (sortFunction, setFunction) => {
       if (dataHolder) {
-        console.log(dataHolder);
         const sortedCoins = [...dataHolder].sort(sortFunction);
         setFunction(sortedCoins.slice(0, coinsToShow));
       }
