@@ -44,7 +44,18 @@ const AdditionalInfo = ({ coinId }) => {
   return (
     <div>
       <h2>Additional Information</h2>
-      <p>Homepage: {additionalInfo.coinGecko.links?.homepage[0] || "N/A"}</p>
+      <p>
+        Homepage:{" "}
+        {additionalInfo.coinGecko.links?.homepage[0] && (
+          <a
+            target="_blank"
+            rel="noopener noreferrer"
+            href={additionalInfo.coinGecko.links.homepage[0]}
+          >
+            {additionalInfo.coinGecko.links.homepage[0]}
+          </a>
+        )}
+      </p>
       <p>
         Market Cap Rank: {additionalInfo.coinGecko.market_cap_rank || "N/A"}
       </p>

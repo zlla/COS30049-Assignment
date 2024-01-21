@@ -99,7 +99,7 @@ const AllCoins = () => {
               </div>
 
               <div className="table-responsive">
-                <table className="table table-striped table-hover">
+                <table className="table table-hover">
                   <thead>
                     <tr>
                       <th

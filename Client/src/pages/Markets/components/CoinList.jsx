@@ -1,11 +1,14 @@
+import { Table } from "react-bootstrap";
 import CoinCard from "./CoinCard";
 
 const CoinList = ({ coins }) => (
-  <div>
-    {coins.map((coin) => (
-      <CoinCard key={coin.id} coin={coin} />
-    ))}
-  </div>
+  <Table hover borderless style={{ width: "100%" }}>
+    <tbody>
+      {coins.map((coin) => (
+        <CoinCard key={coin.id} coin={coin} />
+      ))}
+    </tbody>
+  </Table>
 );
 
 export default CoinList;
