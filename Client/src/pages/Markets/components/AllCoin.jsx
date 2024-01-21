@@ -1,6 +1,13 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import ReactPaginate from "react-paginate";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faSort,
+  faSortUp,
+  faSortDown,
+} from "@fortawesome/free-solid-svg-icons";
+
 import CoinListDetails from "./CoinListDetails";
 
 const AllCoins = () => {
@@ -100,30 +107,78 @@ const AllCoins = () => {
                         style={{ cursor: "pointer" }}
                       >
                         Name
+                        {sortField === "name" && (
+                          <FontAwesomeIcon
+                            icon={sortOrder === "asc" ? faSortUp : faSortDown}
+                            className="ml-1"
+                          />
+                        )}
+                        {sortField !== "name" && (
+                          <FontAwesomeIcon icon={faSort} className="ml-1" />
+                        )}
                       </th>
                       <th
                         onClick={() => handleSort("priceUsd")}
                         style={{ cursor: "pointer" }}
                       >
                         Price (USD)
+                        {sortField === "priceUsd" && (
+                          <FontAwesomeIcon
+                            icon={sortOrder === "asc" ? faSortUp : faSortDown}
+                            className="ml-1"
+                          />
+                        )}
+                        {sortField !== "priceUsd" && (
+                          <FontAwesomeIcon icon={faSort} className="ml-1" />
+                        )}
                       </th>
+
                       <th
                         onClick={() => handleSort("changePercent24Hr")}
                         style={{ cursor: "pointer" }}
                       >
                         Change (24Hr %)
+                        {sortField === "changePercent24Hr" && (
+                          <FontAwesomeIcon
+                            icon={sortOrder === "asc" ? faSortUp : faSortDown}
+                            className="ml-1"
+                          />
+                        )}
+                        {sortField !== "changePercent24Hr" && (
+                          <FontAwesomeIcon icon={faSort} className="ml-1" />
+                        )}
                       </th>
+
                       <th
                         onClick={() => handleSort("volumeUsd24Hr")}
                         style={{ cursor: "pointer" }}
                       >
                         Volume (USD 24Hr)
+                        {sortField === "volumeUsd24Hr" && (
+                          <FontAwesomeIcon
+                            icon={sortOrder === "asc" ? faSortUp : faSortDown}
+                            className="ml-1"
+                          />
+                        )}
+                        {sortField !== "volumeUsd24Hr" && (
+                          <FontAwesomeIcon icon={faSort} className="ml-1" />
+                        )}
                       </th>
+
                       <th
                         onClick={() => handleSort("marketCapUsd")}
                         style={{ cursor: "pointer" }}
                       >
                         Market Cap (USD)
+                        {sortField === "marketCapUsd" && (
+                          <FontAwesomeIcon
+                            icon={sortOrder === "asc" ? faSortUp : faSortDown}
+                            className="ml-1"
+                          />
+                        )}
+                        {sortField !== "marketCapUsd" && (
+                          <FontAwesomeIcon icon={faSort} className="ml-1" />
+                        )}
                       </th>
                     </tr>
                   </thead>

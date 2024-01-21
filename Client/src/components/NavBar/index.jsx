@@ -5,9 +5,9 @@ const NavBar = () => {
     <div>
       <nav className="navbar navbar-expand-lg bg-primary" data-bs-theme="dark">
         <div className="container-fluid">
-          <a className="navbar-brand" href="#">
-            Navbar
-          </a>
+          <NavLink to={"/"} className="navbar-brand" href="#">
+            PờRồMin Trader
+          </NavLink>
           <button
             className="navbar-toggler"
             type="button"
@@ -22,23 +22,23 @@ const NavBar = () => {
           <div className="collapse navbar-collapse" id="navbarColor01">
             <ul className="navbar-nav me-auto">
               <li className="nav-item">
-                <NavLink to={"/buyCrypto"} className="nav-link active" href="#">
+                <NavLink to={"/"} className="nav-link">
                   Buy Crypto
                   <span className="visually-hidden">(current)</span>
                 </NavLink>
               </li>
               <li className="nav-item">
-                <NavLink to={"/Markets"} className="nav-link" href="#">
+                <NavLink to={"/Markets"} className="nav-link">
                   Markets
                 </NavLink>
               </li>
               <li className="nav-item">
-                <NavLink className="nav-link" href="#">
+                <NavLink to={"/"} className="nav-link">
                   Trade
                 </NavLink>
               </li>
               <li className="nav-item">
-                <NavLink className="nav-link" href="#">
+                <NavLink to={"/"} className="nav-link">
                   About
                 </NavLink>
               </li>

@@ -10,7 +10,7 @@ const Markets = (props) => {
   const [trendingCoins, setTrendingCoins] = useState([]);
   const [gainerCoins, setGainerCoins] = useState([]);
   const [volumeCoins, setVolumeCoins] = useState([]);
-  const coinsToShow = 6;
+  const coinsToShow = 3;
 
   useEffect(() => {
     const fetchCoins = async (sortFunction, setFunction) => {
@@ -30,6 +30,7 @@ const Markets = (props) => {
 
   return (
     <div className="container mt-5">
+      <h1>Markets Overview</h1>
       <div className="row">
         <div className="col-md-4">
           <div className="card">

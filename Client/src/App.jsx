@@ -1,5 +1,4 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import "bootswatch/dist/Darkly/bootstrap.min.css";
 import { useEffect, useState } from "react";
 import axios from "axios";
 
