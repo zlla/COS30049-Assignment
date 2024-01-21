@@ -18,14 +18,14 @@ const Home = () => {
   const carouselData = [
     {
       imageLink:
-        "https://th.bing.com/th/id/OIP.k6oYgmmsBLwv9DVtzc6o6AHaE8?w=286&h=190&c=7&r=0&o=5&pid=1.7",
+        "https://static.vecteezy.com/system/resources/previews/002/411/208/non_2x/business-growth-concept-businesswoman-nurturing-a-dollar-tree-with-watering-can-vector.jpg",
       imageTitle: "Ancient Roman Coin",
       imageDesc:
         "A fascinating ancient Roman coin depicting historical figures and events. Explore the rich history of Roman civilization.",
     },
     {
       imageLink:
-        "https://th.bing.com/th/id/OIP.2iv02FC4Pc4eK3HQYfPuKAHaEI?w=325&h=181&c=7&r=0&o=5&pid=1.7",
+        "https://img.money.com/2020/03/final-self-employ-saving.jpg?quality=85",
       imageTitle: "Rare Gold Coin",
       imageDesc:
         "A rare and valuable gold coin showcasing exquisite craftsmanship. Learn about the rarity and significance of this precious numismatic item.",
@@ -71,8 +71,40 @@ const Home = () => {
   const minPriceValue = Math.min(...chartData.map((entry) => entry.price));
   const maxPriceValue = Math.max(...chartData.map((entry) => entry.price));
 
+  const formatYAxisValue = (value) => {
+    const absValue = Math.abs(value);
+
+    if (absValue >= 1e12) {
+      return (value / 1e12).toFixed(1) + "T";
+    } else if (absValue >= 1e9) {
+      return (value / 1e9).toFixed(1) + "B";
+    } else if (absValue >= 1e6) {
+      return (value / 1e6).toFixed(1) + "M";
+    } else if (absValue >= 1e3) {
+      return (value / 1e3).toFixed(1) + "k";
+    } else {
+      return value.toFixed(1);
+    }
+  };
+
+  const CustomYAxisTick = ({ x, y, payload }) => {
+    const formattedValue = formatYAxisValue(payload.value);
+
+    return (
+      <text
+        x={x}
+        y={y}
+        textAnchor="end"
+        fill="#666"
+        transform={`rotate(0 ${x},${y})`}
+      >
+        {formattedValue}
+      </text>
+    );
+  };
+
   return (
-    <Container className="mt-4 pt-5">
+    <Container className="mt-2 pt-2">
       <Row className="d-flex justify-content-around">
         <Col
           lg={6}
@@ -87,7 +119,7 @@ const Home = () => {
             </p>
           </div>
         </Col>
-        <Col lg={6} className="mb-4">
+        <Col lg={6}>
           <div className="crypto-container p-3">
             <div
               className="crypto-block-1 border-primary rounded p-3"
@@ -126,7 +158,48 @@ const Home = () => {
           </div>
         </Col>
       </Row>
+
       <div className="my-4">
+        <h2 className="text-primary">Popular Chart: BTC</h2>
+        <div className="d-flex justify-content-evenly">
+          {/* Line Chart for Price */}
+
+          <LineChart width={600} height={300} data={chartData}>
+            <XAxis dataKey="timestamp" />
+            <YAxis
+              domain={[
+                minPriceValue - 0.1 * (maxPriceValue - minPriceValue),
+                maxPriceValue + 0.1 * (maxPriceValue - minPriceValue),
+              ]}
+              tick={<CustomYAxisTick />}
+            />
+            <CartesianGrid strokeDasharray="3 3" />
+            <Tooltip />
+            <Legend />
+            <Line
+              type="monotone"
+              dataKey="price"
+              stroke="#4CAF50"
+              strokeWidth={2}
+              dot={false}
+            />
+            <Brush dataKey="timestamp" height={30} stroke="#8884d8" />
+          </LineChart>
+
+          {/* Bar Chart for Volume */}
+          <BarChart width={600} height={300} data={chartData}>
+            <XAxis dataKey="timestamp" />
+            <YAxis tick={<CustomYAxisTick />} />
+            <CartesianGrid strokeDasharray="3 3" />
+            <Tooltip />
+            <Legend />
+            <Bar dataKey="total_volumes" fill="#82ca9d" />
+            <Brush dataKey="timestamp" height={30} stroke="#8884d8" />
+          </BarChart>
+        </div>
+      </div>
+
+      <div>
         <Carousel style={{ borderRadius: "15px" }}>
           {carouselData.map((item, index) => (
             <Carousel.Item key={index}>
@@ -149,44 +222,6 @@ const Home = () => {
             </Carousel.Item>
           ))}
         </Carousel>
-      </div>
-      <div className="mt-5">
-        <h2 className="text-primary">Popular Chart: BTC</h2>
-        <div className="d-flex justify-content-between">
-          {/* Line Chart for Price */}
-
-          <LineChart width={600} height={300} data={chartData}>
-            <XAxis dataKey="timestamp" />
-            <YAxis
-              domain={[
-                minPriceValue - 0.1 * (maxPriceValue - minPriceValue),
-                maxPriceValue + 0.1 * (maxPriceValue - minPriceValue),
-              ]}
-            />
-            <CartesianGrid strokeDasharray="3 3" />
-            <Tooltip />
-            <Legend />
-            <Line
-              type="monotone"
-              dataKey="price"
-              stroke="#4CAF50"
-              strokeWidth={2}
-              dot={false}
-            />
-            <Brush dataKey="timestamp" height={30} stroke="#8884d8" />
-          </LineChart>
-
-          {/* Bar Chart for Volume */}
-          <BarChart width={600} height={300} data={chartData}>
-            <XAxis dataKey="timestamp" />
-            <YAxis orientation="right" />
-            <CartesianGrid strokeDasharray="3 3" />
-            <Tooltip />
-            <Legend />
-            <Bar dataKey="total_volumes" fill="#82ca9d" />
-            <Brush dataKey="timestamp" height={30} stroke="#8884d8" />
-          </BarChart>
-        </div>
       </div>
     </Container>
   );
