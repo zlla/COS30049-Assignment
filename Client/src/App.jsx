@@ -7,6 +7,7 @@ import NavBar from "./components/NavBar";
 import Home from "./pages/Home";
 import Markets from "./pages/Markets";
 import CoinDetailPage from "./pages/Coin/CoinDetails";
+import BuySellPage from "./pages/BuySell";
 
 function App() {
   const [dataHolder, setDataHolder] = useState();
@@ -39,6 +40,7 @@ function App() {
             path="/coins/:id"
             element={<CoinDetailPage dataHolder={dataHolder} />}
           />
+          <Route path="/crypto/:action" element={<BuySellPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

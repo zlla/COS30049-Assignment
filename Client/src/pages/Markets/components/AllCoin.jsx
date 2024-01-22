@@ -23,6 +23,7 @@ const AllCoins = () => {
     try {
       const response = await axios.get("https://api.coincap.io/v2/assets", {});
       const data = response.data.data;
+      console.log(data);
       setAllCoins(data);
     } catch (error) {
       console.error("Error fetching all coins:", error);

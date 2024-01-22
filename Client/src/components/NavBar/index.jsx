@@ -22,7 +22,7 @@ const NavBar = () => {
           <div className="collapse navbar-collapse" id="navbarColor01">
             <ul className="navbar-nav me-auto">
               <li className="nav-item">
-                <NavLink to={"/"} className="nav-link">
+                <NavLink to={"/crypto/buy"} className="nav-link">
                   Buy Crypto
                   <span className="visually-hidden">(current)</span>
                 </NavLink>
