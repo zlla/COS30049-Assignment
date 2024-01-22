@@ -35,7 +35,7 @@ const Markets = (props) => {
         <div className="col-md-4">
           <div className="card">
             <div className="card-body">
-              <h2 className="card-title text-center">Trending Coins</h2>
+              <h2 className="card-title text-center">Trending</h2>
               <CoinList coins={trendingCoins} />
             </div>
           </div>
@@ -43,7 +43,7 @@ const Markets = (props) => {
         <div className="col-md-4">
           <div className="card">
             <div className="card-body">
-              <h2 className="card-title text-center">Top Gainer Coins</h2>
+              <h2 className="card-title text-center">Top Gainer</h2>
               <CoinList coins={gainerCoins} />
             </div>
           </div>
@@ -51,7 +51,7 @@ const Markets = (props) => {
         <div className="col-md-4">
           <div className="card">
             <div className="card-body">
-              <h2 className="card-title text-center">Top Volume Coins</h2>
+              <h2 className="card-title text-center">Top Volume</h2>
               <CoinList coins={volumeCoins} />
             </div>
           </div>

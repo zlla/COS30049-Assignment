@@ -1,6 +1,12 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { Button, Row, Col } from "react-bootstrap";
+import { FaBitcoin, FaUserPlus, FaShieldAlt } from "react-icons/fa";
+
+import "./style/index.css";
+import Chart from "./components/chart";
+import CoinConversionTable from "./components/CoinConversionTable";
 
 const BuySellPage = () => {
   const { action } = useParams();
@@ -10,18 +16,21 @@ const BuySellPage = () => {
   const [coinToUsdRate, setCoinToUsdRate] = useState(null);
   const [coinAmount, setCoinAmount] = useState("");
   const [usdAmount, setUsdAmount] = useState("");
+  const [coin, setCoin] = useState(null);
 
   const [allCoins, setAllCoins] = useState([]);
   const [filteredCoins, setFilteredCoins] = useState([]);
-  const [selectedCoinName, setSelectedCoinName] = useState("");
-  const [selectedCoinId, setSelectedCoinId] = useState("");
   const [isSearchListOpen, setIsSearchListOpen] = useState(true);
+  const [selectedCoinName, setSelectedCoinName] = useState("Bitcoin");
+  const [selectedCoinId, setSelectedCoinId] = useState("bitcoin");
 
-  const handleBuySellButton = () => {
-    if (action.toLowerCase() === "buy") {
-      navigate("/crypto/sell");
-    } else {
-      navigate("/crypto/buy");
+  const handleBuySellButton = (e) => {
+    if (e.target.innerHTML.toLowerCase() !== action.toLowerCase()) {
+      if (action.toLowerCase() === "buy") {
+        navigate("/crypto/sell");
+      } else {
+        navigate("/crypto/buy");
+      }
     }
   };
 
@@ -32,7 +41,8 @@ const BuySellPage = () => {
         coin.symbol.toLowerCase().includes(searchInput) ||
         coin.id.toLowerCase().includes(searchInput.toString())
     );
-    setFilteredCoins(filtered);
+    const firstFiveFiltered = filtered.slice(0, 5);
+    setFilteredCoins(firstFiveFiltered);
     setIsSearchListOpen(searchInput.trim() !== "");
   };
 
@@ -52,6 +62,13 @@ const BuySellPage = () => {
     const inputUsdValue = e.target.value;
     setUsdAmount(inputUsdValue);
     setCoinAmount(inputUsdValue / coinToUsdRate);
+  };
+
+  const [showFull, setShowFull] = useState(false);
+  const maxLength = 500;
+
+  const toggleShow = () => {
+    setShowFull(!showFull);
   };
 
   useEffect(() => {
@@ -79,6 +96,8 @@ const BuySellPage = () => {
             `https://api.coingecko.com/api/v3/coins/${selectedCoinId}?tickers=false&market_data=true&community_data=false&developer_data=false&sparkline=false`
           )
           .then((response) => {
+            console.log(response.data);
+            setCoin(response.data);
             setCoinToUsdRate(response.data.market_data.current_price.usd);
           })
           .catch((error) => {
@@ -94,10 +113,23 @@ const BuySellPage = () => {
     <div className="container mt-5">
       <div className="row">
         {/* Left Section - Placeholder */}
-        <div className="col-md-6">
-          <div className="card">
-            <div className="card-body text-center">
-              <h2>{action.charAt(0).toUpperCase() + action.slice(1)} Crypto</h2>
+        <div className="col-md-6 d-flex align-items-center justify-content-center">
+          <div className="card" style={{ border: "none" }}>
+            <div className="card-body">
+              <h2 className="mb-4">
+                {action.charAt(0).toUpperCase() + action.slice(1)} Crypto
+              </h2>
+              <p className="lead mb-4">Various payment methods available</p>
+              <p>
+                <FaUserPlus size={24} /> Sign Up
+              </p>
+              <p>
+                <FaShieldAlt size={24} /> Verify Account
+              </p>
+              <p className="mb-0">
+                <FaBitcoin size={24} />{" "}
+                {action.charAt(0).toUpperCase() + action.slice(1)} Crypto
+              </p>
             </div>
           </div>
         </div>
@@ -107,11 +139,27 @@ const BuySellPage = () => {
           {!isLoading && (
             <div className="card">
               <div className="card-body">
-                <div>
-                  <button onClick={() => handleBuySellButton()}>Buy</button>
-                  <button onClick={() => handleBuySellButton()}>Sell</button>
-                </div>
-                <h2>Trade Form</h2>
+                <Row>
+                  <Col md={6}>
+                    <Button
+                      variant="primary"
+                      onClick={(e) => handleBuySellButton(e)}
+                      className="w-100"
+                    >
+                      Buy
+                    </Button>
+                  </Col>
+                  <Col md={6}>
+                    <Button
+                      variant="danger"
+                      onClick={(e) => handleBuySellButton(e)}
+                      className="w-100"
+                    >
+                      Sell
+                    </Button>
+                  </Col>
+                </Row>
+
                 <form>
                   {/* Coin Amount Input */}
                   <div className="mb-3">
@@ -124,6 +172,7 @@ const BuySellPage = () => {
                       id="coinAmount"
                       value={coinAmount}
                       onChange={handleCoinInputChange}
+                      disabled={!selectedCoinId || coinToUsdRate === null}
                     />
                   </div>
 
@@ -138,23 +187,24 @@ const BuySellPage = () => {
                       id="usdAmount"
                       value={usdAmount}
                       onChange={handleUsdInputChange}
+                      disabled={!selectedCoinId || coinToUsdRate === null}
                     />
-                    {!selectedCoinId && (
-                      <span style={{ color: "red" }}>
-                        Select Coin Type First
-                      </span>
-                    )}
-                    {selectedCoinId && coinToUsdRate === null && (
-                      <span style={{ color: "red" }}>
-                        Please wait a second to get Coin Price
-                      </span>
-                    )}
                   </div>
+                  {!selectedCoinId && (
+                    <span style={{ color: "red" }}>
+                      *Please select Coin Type first!
+                    </span>
+                  )}
+                  {selectedCoinId && coinToUsdRate === null && (
+                    <span style={{ color: "red" }}>
+                      *Please wait a second to get Coin Price!
+                    </span>
+                  )}
 
                   {/* Coin Search Input */}
                   <div className="mb-3">
                     <label htmlFor="coinSearch" className="form-label">
-                      Coin Type
+                      Coin Type (Default is <b>Bitcoin</b>)
                     </label>
                     <input
                       type="text"
@@ -216,6 +266,69 @@ const BuySellPage = () => {
           {isLoading && <h1>Loading ...</h1>}
         </div>
       </div>
+      <div className="row  m-5">
+        <div className="col-md-6">
+          {selectedCoinId && coin && (
+            <div>
+              <div className="d-flex justify-content-between">
+                <h3>{selectedCoinName}/USD</h3>
+                <div>
+                  <h5>{coin?.market_data.price_change_24h}%</h5>
+                  <h3>${coin?.market_data.current_price.usd}</h3>
+                </div>
+              </div>
+              <Chart coinId={selectedCoinId} />
+            </div>
+          )}
+        </div>
+        {coin && (
+          <div className="col-md-6">
+            <h3>{selectedCoinName} Markets</h3>
+            <div className="d-flex">
+              <p className="font-weight-bold me-4 lead ">
+                market cap rank <br />
+                <b className="text-info">
+                  #{coin?.market_data.market_cap_rank}
+                </b>
+              </p>
+              <p className="font-weight-bold lead">
+                market cap <br />
+                <b className="text-info">{coin?.market_data.market_cap.usd}</b>
+              </p>
+            </div>
+            <div className="d-flex">
+              <p className="font-weight-bold me-4 lead">
+                total volume <br />
+                <b className="text-info">
+                  {coin?.market_data.total_volume.usd}
+                </b>
+              </p>
+              <p className="font-weight-bold lead">
+                circulating supply <br />
+                <b className="text-info">
+                  {coin?.market_data.circulating_supply}
+                </b>
+              </p>
+            </div>
+            <div>
+              <p>
+                {showFull
+                  ? coin?.description.en
+                  : `${coin?.description.en.slice(0, maxLength)}...`}
+              </p>
+              <a
+                onClick={toggleShow}
+                className={`btn btn-link ${showFull ? "text-danger" : ""}  p-0`}
+              >
+                {showFull ? "Show Less" : "Show More"}
+              </a>
+            </div>
+          </div>
+        )}
+      </div>
+      {coin && (
+        <CoinConversionTable coinValue={coin?.market_data.current_price.usd} />
+      )}
     </div>
   );
 };
