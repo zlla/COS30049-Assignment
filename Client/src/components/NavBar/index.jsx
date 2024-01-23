@@ -1,6 +1,6 @@
 import { Outlet, NavLink } from "react-router-dom";
 
-const NavBar = () => {
+const NavBar = ({ coinId }) => {
   return (
     <div>
       <nav className="navbar navbar-expand-lg bg-primary" data-bs-theme="dark">
@@ -33,13 +33,8 @@ const NavBar = () => {
                 </NavLink>
               </li>
               <li className="nav-item">
-                <NavLink to={"/"} className="nav-link">
+                <NavLink to={`/trade/${coinId}`} className="nav-link">
                   Trade
-                </NavLink>
-              </li>
-              <li className="nav-item">
-                <NavLink to={"/"} className="nav-link">
-                  About
                 </NavLink>
               </li>
               <li className="nav-item dropdown">
@@ -54,18 +49,17 @@ const NavBar = () => {
                   More
                 </a>
                 <div className="dropdown-menu">
-                  <a className="dropdown-item" href="#">
-                    Action
-                  </a>
-                  <a className="dropdown-item" href="#">
-                    Another action
-                  </a>
-                  <a className="dropdown-item" href="#">
-                    Something else here
-                  </a>
+                  <NavLink to={"/auth"} className="dropdown-item" href="#">
+                    Login
+                  </NavLink>
                   <div className="dropdown-divider"></div>
-                  <a className="dropdown-item" href="#">
-                    Separated link
+                  <a
+                    className="dropdown-item"
+                    rel="noopener noreferrer"
+                    target="_blank"
+                    href="https://www.facebook.com/nguyenhoangan32"
+                  >
+                    fb: Nguyen Hoang An
                   </a>
                 </div>
               </li>

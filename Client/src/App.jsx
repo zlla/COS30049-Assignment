@@ -8,9 +8,12 @@ import Home from "./pages/Home";
 import Markets from "./pages/Markets";
 import CoinDetailPage from "./pages/Coin/CoinDetails";
 import BuySellPage from "./pages/BuySell";
+import Auth from "./pages/Auth/index";
+import Footer from "./components/Footer";
 
 function App() {
   const [dataHolder, setDataHolder] = useState();
+  const [coinId, setCoinId] = useState("bitcoin");
 
   useEffect(() => {
     const fetchCoinsData = async () => {
@@ -30,17 +33,24 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route element={<NavBar />}>
-          <Route path="/" element={<Home />} />
-          <Route
-            path="/markets"
-            element={<Markets dataHolder={dataHolder} />}
-          />
-          <Route
-            path="/coins/:id"
-            element={<CoinDetailPage dataHolder={dataHolder} />}
-          />
-          <Route path="/crypto/:action" element={<BuySellPage />} />
+        <Route element={<NavBar coinId={coinId} />}>
+          <Route element={<Footer />}>
+            <Route path="/" element={<Home />} />
+            <Route path="/auth" element={<Auth />} />
+            <Route
+              path="/markets"
+              element={
+                <Markets dataHolder={dataHolder} setCoinId={setCoinId} />
+              }
+            />
+            <Route
+              path="/trade/:id"
+              element={
+                <CoinDetailPage dataHolder={dataHolder} coinId={coinId} />
+              }
+            />
+            <Route path="/crypto/:action" element={<BuySellPage />} />
+          </Route>
         </Route>
       </Routes>
     </BrowserRouter>

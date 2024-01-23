@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 
-const CoinCard = ({ coin }) => {
+const CoinCard = ({ coin, setCoinId }) => {
   const navigate = useNavigate();
 
   const formattedPrice = parseFloat(coin.priceUsd).toFixed(2);
@@ -12,7 +12,8 @@ const CoinCard = ({ coin }) => {
     <tr
       key={coin.id}
       onClick={() => {
-        navigate(`/coins/${coin.id}`);
+        setCoinId(coin.id);
+        navigate(`/trade/${coin.id}`);
       }}
     >
       <td>{coin.symbol}</td>

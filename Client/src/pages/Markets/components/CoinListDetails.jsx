@@ -1,7 +1,7 @@
 import { any } from "prop-types";
 import { useNavigate } from "react-router-dom";
 
-const CoinListDetails = ({ coins }) => {
+const CoinListDetails = ({ coins, setCoinId }) => {
   const navigate = useNavigate();
 
   return (
@@ -10,12 +10,13 @@ const CoinListDetails = ({ coins }) => {
         <tr
           key={coin.id}
           onClick={() => {
-            navigate(`/coins/${coin.id}`);
+            setCoinId(coin.id);
+            navigate(`/trade/${coin.id}`);
           }}
         >
           <td>{coin.name}</td>
           <td>${parseFloat(coin.priceUsd).toFixed(2)}</td>
-          <td>{`${parseFloat(coin.changePercent24Hr).toFixed(2)}%`}</td>
+          <td>{`{parseFloat(coin.changePercent24Hr).toFixed(2)}%`}</td>
           <td>${parseFloat(coin.volumeUsd24Hr).toFixed(2)}</td>
           <td>${parseFloat(coin.marketCapUsd).toFixed(2)}</td>
         </tr>

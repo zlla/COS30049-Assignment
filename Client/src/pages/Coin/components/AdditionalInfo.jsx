@@ -20,11 +20,6 @@ const AdditionalInfo = ({ coinId }) => {
           coinGecko: coinGeckoResponse.data,
           coinCap: coinCapResponse.data.data,
         });
-
-        console.log({
-          coinGecko: coinGeckoResponse.data,
-          coinCap: coinCapResponse.data.data,
-        });
       } catch (error) {
         console.log(error);
       }

@@ -96,7 +96,6 @@ const BuySellPage = () => {
             `https://api.coingecko.com/api/v3/coins/${selectedCoinId}?tickers=false&market_data=true&community_data=false&developer_data=false&sparkline=false`
           )
           .then((response) => {
-            console.log(response.data);
             setCoin(response.data);
             setCoinToUsdRate(response.data.market_data.current_price.usd);
           })

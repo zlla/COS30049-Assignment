@@ -16,11 +16,15 @@ import {
 import AdditionalInfo from "./components/AdditionalInfo";
 
 const CoinDetailPage = (props) => {
-  const { id } = useParams();
-  const { dataHolder } = props;
+  let { id } = useParams();
+  const { dataHolder, coinId } = props;
   const [days, setDays] = useState(7);
   const [coinData, setCoinData] = useState(null);
   const [chartData, setChartData] = useState([]);
+
+  if (id === null || id === "") {
+    id = coinId;
+  }
 
   useEffect(() => {
     const fetchMarketChartById = async () => {

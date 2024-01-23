@@ -5,7 +5,7 @@ import AllCoins from "./components/AllCoin";
 import { array } from "prop-types";
 
 const Markets = (props) => {
-  const { dataHolder } = props;
+  const { dataHolder, setCoinId } = props;
 
   const [trendingCoins, setTrendingCoins] = useState([]);
   const [gainerCoins, setGainerCoins] = useState([]);
@@ -36,7 +36,7 @@ const Markets = (props) => {
           <div className="card">
             <div className="card-body">
               <h2 className="card-title text-center">Trending</h2>
-              <CoinList coins={trendingCoins} />
+              <CoinList coins={trendingCoins} setCoinId={setCoinId} />
             </div>
           </div>
         </div>
@@ -44,7 +44,7 @@ const Markets = (props) => {
           <div className="card">
             <div className="card-body">
               <h2 className="card-title text-center">Top Gainer</h2>
-              <CoinList coins={gainerCoins} />
+              <CoinList coins={gainerCoins} setCoinId={setCoinId} />
             </div>
           </div>
         </div>
@@ -52,12 +52,12 @@ const Markets = (props) => {
           <div className="card">
             <div className="card-body">
               <h2 className="card-title text-center">Top Volume</h2>
-              <CoinList coins={volumeCoins} />
+              <CoinList coins={volumeCoins} setCoinId={setCoinId} />
             </div>
           </div>
         </div>
       </div>
-      <AllCoins />
+      <AllCoins setCoinId={setCoinId} />
     </div>
   );
 };

@@ -10,7 +10,7 @@ import {
 
 import CoinListDetails from "./CoinListDetails";
 
-const AllCoins = () => {
+const AllCoins = ({ setCoinId }) => {
   const [allCoins, setAllCoins] = useState([]);
   const [currentPage, setCurrentPage] = useState(0);
   const [sortOrder, setSortOrder] = useState("asc");
@@ -23,7 +23,6 @@ const AllCoins = () => {
     try {
       const response = await axios.get("https://api.coincap.io/v2/assets", {});
       const data = response.data.data;
-      console.log(data);
       setAllCoins(data);
     } catch (error) {
       console.error("Error fetching all coins:", error);
@@ -183,7 +182,10 @@ const AllCoins = () => {
                       </th>
                     </tr>
                   </thead>
-                  <CoinListDetails coins={displayCoins()} />
+                  <CoinListDetails
+                    coins={displayCoins()}
+                    setCoinId={setCoinId}
+                  />
                 </table>
               </div>
 
