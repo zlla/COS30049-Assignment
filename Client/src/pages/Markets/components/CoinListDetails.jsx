@@ -16,7 +16,7 @@ const CoinListDetails = ({ coins, setCoinId }) => {
         >
           <td>{coin.name}</td>
           <td>${parseFloat(coin.priceUsd).toFixed(2)}</td>
-          <td>{`{parseFloat(coin.changePercent24Hr).toFixed(2)}%`}</td>
+          <td>{`${parseFloat(coin.changePercent24Hr).toFixed(2)}%`}</td>
           <td>${parseFloat(coin.volumeUsd24Hr).toFixed(2)}</td>
           <td>${parseFloat(coin.marketCapUsd).toFixed(2)}</td>
         </tr>
