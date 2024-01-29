@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 
-const AdditionalInfo = ({ coinId }) => {
+const AdditionalInfo = ({ coinId, setCoinId }) => {
   const [additionalInfo, setAdditionalInfo] = useState(null);
 
   useEffect(() => {

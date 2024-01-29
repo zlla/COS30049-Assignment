@@ -13,6 +13,8 @@ import {
   Legend,
   Brush,
 } from "recharts";
+import { trendingCoinsHolder } from "../../../data/trendingCoins";
+import { formattedDataHolder } from "../../../data/chartDataHomePage";
 
 const Home = () => {
   const carouselData = [
@@ -43,6 +45,7 @@ const Home = () => {
         );
         setTrendingCoins(response.data.coins.slice(1, 4));
       } catch (error) {
+        setTrendingCoins(trendingCoinsHolder);
         console.log(error);
       }
     };
@@ -60,6 +63,7 @@ const Home = () => {
 
         setChartData(formattedData);
       } catch (error) {
+        setChartData(formattedDataHolder);
         console.log(error);
       }
     };

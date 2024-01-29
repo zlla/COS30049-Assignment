@@ -9,6 +9,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 
 import CoinListDetails from "./CoinListDetails";
+import { allCoinsHolder } from "../../../../data/allCoinsMarket";
 
 const AllCoins = ({ setCoinId }) => {
   const [allCoins, setAllCoins] = useState([]);
@@ -25,6 +26,7 @@ const AllCoins = ({ setCoinId }) => {
       const data = response.data.data;
       setAllCoins(data);
     } catch (error) {
+      setAllCoins(allCoinsHolder);
       console.error("Error fetching all coins:", error);
     }
   };

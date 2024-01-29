@@ -12,6 +12,7 @@ import Auth from "./pages/Auth/index";
 import Footer from "./components/Footer";
 import Wallet from "./pages/Wallet";
 import Account from "./pages/Account";
+import { dataAppHolder } from "../data/dataApp";
 
 function App() {
   const [dataHolder, setDataHolder] = useState();
@@ -22,9 +23,9 @@ function App() {
       try {
         const response = await axios.get("https://api.coincap.io/v2/assets");
         const data = response.data.data;
-
         setDataHolder(data);
       } catch (error) {
+        setDataHolder(dataAppHolder);
         console.error("Error fetching volume coins:", error);
       }
     };
@@ -48,7 +49,11 @@ function App() {
             <Route
               path="/trade/:id"
               element={
-                <CoinDetailPage dataHolder={dataHolder} coinId={coinId} />
+                <CoinDetailPage
+                  dataHolder={dataHolder}
+                  coinId={coinId}
+                  setCoinId={setCoinId}
+                />
               }
             />
             <Route path="/crypto/:action" element={<BuySellPage />} />

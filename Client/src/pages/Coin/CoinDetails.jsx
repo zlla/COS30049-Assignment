@@ -14,10 +14,11 @@ import {
   ReferenceLine,
 } from "recharts";
 import AdditionalInfo from "./components/AdditionalInfo";
+import { chartDataHolder } from "../../../data/coinDetails";
 
 const CoinDetailPage = (props) => {
   let { id } = useParams();
-  const { dataHolder, coinId } = props;
+  const { dataHolder, coinId, setCoinId } = props;
   const [days, setDays] = useState(7);
   const [coinData, setCoinData] = useState(null);
   const [chartData, setChartData] = useState([]);
@@ -38,9 +39,10 @@ const CoinDetailPage = (props) => {
           price: entry[1],
           vol: response.data.total_volumes[index][1],
         }));
-
         setChartData(formattedData);
       } catch (error) {
+        setCoinId("bitcoin");
+        setChartData(chartDataHolder);
         console.log(error);
       }
     };
@@ -117,7 +119,7 @@ const CoinDetailPage = (props) => {
         <Col md={6} className="h-100">
           {/* Right Block */}
           <div className="right-block p-3 border rounded h-100">
-            <AdditionalInfo coinId={id} />
+            <AdditionalInfo coinId={id} setCoinId={setCoinId} />
           </div>
         </Col>
       </Row>

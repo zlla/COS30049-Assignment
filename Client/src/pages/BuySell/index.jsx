@@ -7,6 +7,8 @@ import { FaBitcoin, FaUserPlus, FaShieldAlt } from "react-icons/fa";
 import "./style/index.css";
 import Chart from "./components/chart";
 import CoinConversionTable from "./components/CoinConversionTable";
+import { allCoinsHolder } from "../../../data/allCoinsBuySellPage";
+import { coinHolder } from "../../../data/coinBuySellPage";
 
 const BuySellPage = () => {
   const { action } = useParams();
@@ -80,8 +82,9 @@ const BuySellPage = () => {
           setIsLoading(false);
         })
         .catch((error) => {
+          setAllCoins(allCoinsHolder);
           console.log(error);
-          setIsLoading(true);
+          setIsLoading(false);
         });
     };
 
@@ -100,6 +103,8 @@ const BuySellPage = () => {
             setCoinToUsdRate(response.data.market_data.current_price.usd);
           })
           .catch((error) => {
+            setCoin(coinHolder);
+            setCoinToUsdRate(coinHolder.market_data.current_price.usd);
             console.log(error);
           });
       }
