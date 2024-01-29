@@ -10,6 +10,8 @@ import CoinDetailPage from "./pages/Coin/CoinDetails";
 import BuySellPage from "./pages/BuySell";
 import Auth from "./pages/Auth/index";
 import Footer from "./components/Footer";
+import Wallet from "./pages/Wallet";
+import Account from "./pages/Account";
 
 function App() {
   const [dataHolder, setDataHolder] = useState();
@@ -50,6 +52,8 @@ function App() {
               }
             />
             <Route path="/crypto/:action" element={<BuySellPage />} />
+            <Route path="/wallet" element={<Wallet />} />
+            <Route path="/account" element={<Account />} />
           </Route>
         </Route>
       </Routes>

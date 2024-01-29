@@ -1,6 +1,9 @@
+import { useState } from "react";
 import { Outlet, NavLink } from "react-router-dom";
 
 const NavBar = ({ coinId }) => {
+  const [amountCoin, setAmountCoin] = useState(1000);
+
   return (
     <div>
       <nav className="navbar navbar-expand-lg bg-primary" data-bs-theme="dark">
@@ -49,7 +52,10 @@ const NavBar = ({ coinId }) => {
                   More
                 </a>
                 <div className="dropdown-menu">
-                  <NavLink to={"/auth"} className="dropdown-item" href="#">
+                  <NavLink to={"/account"} className="dropdown-item">
+                    Account
+                  </NavLink>
+                  <NavLink to={"/auth"} className="dropdown-item">
                     Login
                   </NavLink>
                   <div className="dropdown-divider"></div>
@@ -65,6 +71,13 @@ const NavBar = ({ coinId }) => {
               </li>
             </ul>
             <form className="d-flex">
+              <NavLink
+                to={"/wallet"}
+                className="nav-link text-bg-primary my-auto me-sm-2"
+              >
+                <span className="fw-bold me-2">{amountCoin} PRM</span>
+                <span className="badge bg-success">Available Balance</span>
+              </NavLink>
               <input
                 className="form-control me-sm-2"
                 type="search"
