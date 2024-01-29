@@ -11,6 +11,7 @@ import {
   Brush,
   ResponsiveContainer,
 } from "recharts";
+import { formattedDataChartHolder } from "../../../../data/chartBuySell";
 
 const Chart = (props) => {
   const { coinId } = props;
@@ -27,9 +28,9 @@ const Chart = (props) => {
           timestamp: new Date(entry[0]).toLocaleString(),
           price: entry[1],
         }));
-
         setChartData(formattedData);
       } catch (error) {
+        setChartData(formattedDataChartHolder);
         console.log(error);
       }
     };
