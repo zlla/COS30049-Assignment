@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Outlet, NavLink } from "react-router-dom";
 
-const NavBar = ({ coinId }) => {
+const NavBar = ({ coinId, auth, setAuth }) => {
   const [amountCoin, setAmountCoin] = useState(1000);
 
   return (
@@ -52,12 +52,33 @@ const NavBar = ({ coinId }) => {
                   More
                 </a>
                 <div className="dropdown-menu">
-                  <NavLink to={"/account"} className="dropdown-item">
-                    Account
-                  </NavLink>
-                  <NavLink to={"/auth"} className="dropdown-item">
-                    Login
-                  </NavLink>
+                  {auth ? (
+                    <>
+                      <NavLink to={"/account"} className="dropdown-item">
+                        Account
+                      </NavLink>
+                      <a
+                        className="dropdown-item"
+                        onClick={() => {
+                          setAuth(false);
+                          localStorage.removeItem("accessToken");
+                          localStorage.removeItem("refreshToken");
+                        }}
+                      >
+                        Logout
+                      </a>
+                    </>
+                  ) : (
+                    <>
+                      <NavLink to={"/auth/login"} className="dropdown-item">
+                        Login
+                      </NavLink>
+                      <NavLink to={"/auth/register"} className="dropdown-item">
+                        SignUp
+                      </NavLink>
+                    </>
+                  )}
+
                   <div className="dropdown-divider"></div>
                   <a
                     className="dropdown-item"

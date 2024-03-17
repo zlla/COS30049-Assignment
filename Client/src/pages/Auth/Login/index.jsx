@@ -1,21 +1,66 @@
 import "@fortawesome/fontawesome-free/css/all.css";
-import "./style/index.css";
+import axios from "axios";
+import { useState } from "react";
+import { apiUrl } from "../../../settings/apiurl";
+import { useNavigate } from "react-router-dom";
 
-const AuthForm = () => {
+const LogIn = (props) => {
+  const { setAuth } = props;
+  const navigate = useNavigate("");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+
+  const handleLoginForm = async (e) => {
+    e.preventDefault();
+
+    try {
+      const response = await axios.post(`${apiUrl}/login`, {
+        username,
+        password,
+      });
+      setAuth(true);
+      const { accessToken, refreshToken } = response.data;
+      localStorage.setItem("accessToken", accessToken);
+      localStorage.setItem("refreshToken", refreshToken);
+      localStorage.setItem("username", username);
+      navigate("/wallet");
+    } catch (error) {
+      setAuth(false);
+      console.error(error);
+    }
+  };
+
   return (
     <div className="container mt-5 pt-5">
       <form className="col-md-4 offset-md-4">
         <h2 className="text-primary">Login</h2>
         <div className="form-outline mb-4">
-          <input type="email" id="form2Example1" className="form-control" />
-          <label className="form-label" htmlFor="form2Example1">
-            Email address
+          <input
+            id="username"
+            type="text"
+            name="username"
+            value={username}
+            className="form-control"
+            onChange={(e) => {
+              setUsername(e.target.value);
+            }}
+          />
+          <label className="form-label" htmlFor="username">
+            Username
           </label>
         </div>
 
         <div className="form-outline mb-4">
-          <input type="password" id="form2Example2" className="form-control" />
-          <label className="form-label" htmlFor="form2Example2">
+          <input
+            type="password"
+            id="password"
+            value={password}
+            className="form-control"
+            onChange={(e) => {
+              setPassword(e.target.value);
+            }}
+          />
+          <label className="form-label" htmlFor="password">
             Password
           </label>
         </div>
@@ -39,13 +84,17 @@ const AuthForm = () => {
           </div>
         </div>
 
-        <button type="button" className="btn btn-primary btn-block mb-4">
+        <button
+          type="button"
+          onClick={(e) => handleLoginForm(e)}
+          className="btn btn-primary btn-block mb-4"
+        >
           Sign in
         </button>
 
         <div className="text-center">
           <p>
-            Not a member? <a href="#!">Register</a>
+            Not a member? <a href="/auth/register">Register</a>
           </p>
           <p>or sign up with:</p>
           <div className="btn-group">
@@ -71,4 +120,4 @@ const AuthForm = () => {
   );
 };
 
-export default AuthForm;
+export default LogIn;
