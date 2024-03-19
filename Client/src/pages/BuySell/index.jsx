@@ -72,6 +72,21 @@ const BuySellPage = () => {
     setShowFull(!showFull);
   };
 
+  const handleSubmitBtn = (e) => {
+    e.preventDefault();
+
+    const walletAddress = "";
+    const coinId = selectedCoinId;
+    const amount = coinAmount;
+    const totalPrice = coinToUsdRate;
+    const transactionType = action;
+
+    console.log(selectedCoinId);
+    console.log(coinAmount);
+    console.log(coinToUsdRate);
+    console.log(action);
+  };
+
   useEffect(() => {
     let retryCount = 0;
 
@@ -247,7 +262,11 @@ const BuySellPage = () => {
                     </p>
                   )}
 
-                  <button type="submit" className="btn btn-success">
+                  <button
+                    type="button"
+                    className="btn btn-success"
+                    onClick={(e) => handleSubmitBtn(e)}
+                  >
                     {action.charAt(0).toUpperCase() + action.slice(1)}
                   </button>
                 </form>

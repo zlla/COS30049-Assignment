@@ -16,10 +16,13 @@ import SignUp from "./pages/Auth/Register";
 import LogIn from "./pages/Auth/Login";
 import { apiUrl } from "./settings/apiurl";
 
+import abi from "./smartcontracts/ProMinTrader.json";
+
 function App() {
   const initialToken = localStorage.getItem("accessToken");
   const [token, setToken] = useState(initialToken);
   const [auth, setAuth] = useState(!!initialToken);
+  const [instance, setInstance] = useState(null);
 
   const fetchNewToken = async () => {
     const accessToken = localStorage.getItem("accessToken");
@@ -90,6 +93,31 @@ function App() {
     };
 
     fetchCoinsData();
+  }, []);
+
+  useEffect(() => {
+    const loadWeb3 = async () => {
+      try {
+        // Initialize Web3 with localhost provider
+        const web3Provider = new Web3.providers.HttpProvider(
+          "http://localhost:8545"
+        );
+        const web3 = new Web3(web3Provider);
+
+        // Get contract artifact
+        const artifact = abi;
+        const contract = TruffleContract(artifact);
+        contract.setProvider(web3.currentProvider);
+
+        // Deploy the contract and get instance
+        let temp = await contract.deployed();
+        setInstance(temp);
+      } catch (error) {
+        console.error("Error deploying contract:", error);
+      }
+    };
+
+    loadWeb3();
   }, []);
 
   return (

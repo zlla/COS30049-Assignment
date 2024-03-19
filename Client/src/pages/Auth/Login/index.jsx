@@ -89,7 +89,7 @@ const LogIn = (props) => {
           onClick={(e) => handleLoginForm(e)}
           className="btn btn-primary btn-block mb-4"
         >
-          Sign in
+          Log in
         </button>
 
         <div className="text-center">
