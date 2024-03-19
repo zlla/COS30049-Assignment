@@ -5,15 +5,23 @@ contract ProMinTrader {
     struct Transaction {
         uint256 id;
         address walletAddress;
-        uint256 coinId;
+        string coinId;
         uint256 amount;
+        uint256 totalPrice;
         uint256 timestamp;
+        string transactionType;
     }
 
     Transaction[] public transactions;
     uint256 public transactionCount;
 
+    mapping(address => uint256[]) private transactionsByAddress; // Mapping from address to array of transaction IDs
+
     mapping(address => uint256) public balances;
+
+    constructor() public payable {
+        balances[msg.sender] += msg.value;
+    }
 
     function deposit() public payable {
         balances[msg.sender] += msg.value;
@@ -31,79 +39,93 @@ contract ProMinTrader {
 
     function sendToAddress(address payable _recipient, uint256 _amount) public {
         require(_amount > 0, "Amount must be greater than zero");
-        require(address(this).balance >= _amount, "Insufficient balance in the contract");
+        require(
+            address(this).balance >= _amount,
+            "Insufficient balance in the contract"
+        );
         _recipient.transfer(_amount);
     }
 
     function addTransaction(
-        address _walletAddress,
-        uint256[] memory _coinIds,
-        uint256 _amount
+        address payable _walletAddress,
+        string memory _coinId,
+        uint256 _amount,
+        uint256 _totalPrice,
+        string memory _transactionType
     ) public payable {
-        require(msg.value >= _amount, "Insufficient payment");
         uint256 currentTime = block.timestamp;
-        for (uint256 i = 0; i < _coinIds.length; i++) {
-            transactions.push(
-                Transaction(
-                    transactionCount,
-                    _walletAddress,
-                    _coinIds[i],
-                    _amount,
-                    currentTime
-                )
+        transactions.push(
+            Transaction(
+                transactionCount,
+                _walletAddress,
+                _coinId,
+                _amount,
+                _totalPrice,
+                currentTime,
+                _transactionType
+            )
+        );
+        transactionsByAddress[_walletAddress].push(transactionCount); // Update mapping
+        transactionCount++;
+
+        if (
+            keccak256(abi.encodePacked(_transactionType)) ==
+            keccak256(abi.encodePacked("buy"))
+        ) {
+            require(msg.value >= _totalPrice, "Insufficient payment");
+
+            if (msg.value > _totalPrice) {
+                msg.sender.transfer(msg.value - _totalPrice);
+            }
+        } else if (
+            keccak256(abi.encodePacked(_transactionType)) ==
+            keccak256(abi.encodePacked("sell"))
+        ) {
+            require(
+                _totalPrice <= address(this).balance,
+                "Insufficient balance in contract"
             );
-            transactionCount++;
-        }
-        if (msg.value > _amount) {
-            msg.sender.transfer(msg.value - _amount);
+            _walletAddress.transfer(_totalPrice);
         }
     }
 
-    function getTransaction(uint256 _transactionId) public view returns (
-        uint256 id,
-        address walletAddress,
-        uint256 coinId,
-        uint256 amount,
-        uint256 timestamp
-    ) {
-        require(_transactionId < transactions.length, "Transaction ID does not exist");
-        
+    function getTransaction(
+        uint256 _transactionId
+    )
+        public
+        view
+        returns (
+            uint256 id,
+            address walletAddress,
+            string memory coinId,
+            uint256 amount,
+            uint256 timestamp,
+            string memory transactionType
+        )
+    {
+        require(
+            _transactionId < transactions.length,
+            "Transaction ID does not exist"
+        );
+
         Transaction memory transaction = transactions[_transactionId];
-        
+
         id = transaction.id;
         walletAddress = transaction.walletAddress;
         coinId = transaction.coinId;
         amount = transaction.amount;
         timestamp = transaction.timestamp;
+        transactionType = transaction.transactionType;
     }
 
-    function getTransactionsByAddress(address _walletAddress) public view returns (
-        uint256[] memory ids,
-        uint256[] memory coinIds,
-        uint256[] memory amounts,
-        uint256[] memory timestamps
-    ) {
-        uint256 count = 0;
-        for (uint256 i = 0; i < transactions.length; i++) {
-            if (transactions[i].walletAddress == _walletAddress) {
-                count++;
-            }
-        }
-        
-        ids = new uint256[](count);
-        coinIds = new uint256[](count);
-        amounts = new uint256[](count);
-        timestamps = new uint256[](count);
-        
-        uint256 index = 0;
-        for (uint256 j = 0; j < transactions.length; j++) {
-            if (transactions[j].walletAddress == _walletAddress) {
-                ids[index] = transactions[j].id;
-                coinIds[index] = transactions[j].coinId;
-                amounts[index] = transactions[j].amount;
-                timestamps[index] = transactions[j].timestamp;
-                index++;
-            }
-        }
+    function getTransactionsByAddress(
+        address _walletAddress
+    ) public view returns (uint256[] memory) {
+        return transactionsByAddress[_walletAddress];
     }
+
+    // function transferToAddress(address payable _receiver, uint _amount) public {
+    //     require(_amount <= address(this).balance, "Insufficient balance in contract");
+    //     _receiver.transfer(_amount);
+    // }
 }

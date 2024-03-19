@@ -7,20 +7,19 @@ import { FaBitcoin, FaUserPlus, FaShieldAlt } from "react-icons/fa";
 import "./style/index.css";
 import Chart from "./components/chart";
 import CoinConversionTable from "./components/CoinConversionTable";
-import { allCoinsHolder } from "../../../data/allCoinsBuySellPage";
 import { coinHolder } from "../../../data/coinBuySellPage";
+import { allCoins } from "./js/dataholder";
 
 const BuySellPage = () => {
   const { action } = useParams();
   const navigate = useNavigate();
 
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [coinToUsdRate, setCoinToUsdRate] = useState(null);
   const [coinAmount, setCoinAmount] = useState("");
   const [usdAmount, setUsdAmount] = useState("");
   const [coin, setCoin] = useState(null);
 
-  const [allCoins, setAllCoins] = useState([]);
   const [filteredCoins, setFilteredCoins] = useState([]);
   const [isSearchListOpen, setIsSearchListOpen] = useState(true);
   const [selectedCoinName, setSelectedCoinName] = useState("Bitcoin");
@@ -74,43 +73,31 @@ const BuySellPage = () => {
   };
 
   useEffect(() => {
-    const fetchAllCoins = async () => {
-      await axios
-        .get("https://api.coincap.io/v2/assets")
-        .then((response) => {
-          setAllCoins(response.data.data);
-          setIsLoading(false);
-        })
-        .catch((error) => {
-          setAllCoins(allCoinsHolder);
-          console.log(error);
-          setIsLoading(false);
-        });
-    };
+    let retryCount = 0;
 
-    fetchAllCoins();
-  }, []);
-
-  useEffect(() => {
     const fetchCoinById = async () => {
-      if (selectedCoinId !== "") {
-        await axios
-          .get(
-            `https://api.coingecko.com/api/v3/coins/${selectedCoinId}?tickers=false&market_data=true&community_data=false&developer_data=false&sparkline=false`
-          )
-          .then((response) => {
-            setCoin(response.data);
-            setCoinToUsdRate(response.data.market_data.current_price.usd);
-          })
-          .catch((error) => {
-            setCoin(coinHolder);
-            setCoinToUsdRate(coinHolder.market_data.current_price.usd);
-            console.log(error);
-          });
+      try {
+        const response = await axios.get(
+          `https://api.coingecko.com/api/v3/coins/${selectedCoinId}?tickers=false&market_data=true&community_data=false&developer_data=false&sparkline=false`
+        );
+
+        setCoin(response.data);
+        setCoinToUsdRate(response.data.market_data.current_price.usd);
+      } catch (error) {
+        console.log(error);
+        if (retryCount < 3) {
+          // Retry only 3 times
+          setTimeout(() => {
+            retryCount += 1;
+            fetchCoinById();
+          }, 300000); // Wait for 5 minutes before retrying
+        }
       }
     };
 
-    fetchCoinById();
+    if (selectedCoinId !== "") {
+      fetchCoinById();
+    }
   }, [selectedCoinId]);
 
   return (

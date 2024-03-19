@@ -13,8 +13,11 @@ namespace Server.Models
         [Required]
         public required string Password { get; set; }
         public string? Name { get; set; }
+        public string? PhoneNumber { get; set; }
+        public string? Role { get; set; }
 
         public virtual ICollection<RefreshToken>? RefreshTokens { get; set; }
+        public virtual ICollection<Wallet>? Wallets { get; set; }
     }
 }
 
