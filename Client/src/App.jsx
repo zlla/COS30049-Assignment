@@ -23,6 +23,7 @@ function App() {
   const [token, setToken] = useState(initialToken);
   const [auth, setAuth] = useState(!!initialToken);
   const [instance, setInstance] = useState(null);
+  const [web3, setWeb3] = useState(null);
 
   const fetchNewToken = async () => {
     const accessToken = localStorage.getItem("accessToken");
@@ -97,6 +98,9 @@ function App() {
 
   useEffect(() => {
     const loadWeb3 = async () => {
+      const temp1 = await new Web3("http://localhost:8545");
+      setWeb3(temp1);
+
       try {
         // Initialize Web3 with localhost provider
         const web3Provider = new Web3.providers.HttpProvider(
@@ -110,8 +114,8 @@ function App() {
         contract.setProvider(web3.currentProvider);
 
         // Deploy the contract and get instance
-        let temp = await contract.deployed();
-        setInstance(temp);
+        let temp2 = await contract.deployed();
+        setInstance(temp2);
       } catch (error) {
         console.error("Error deploying contract:", error);
       }
@@ -151,7 +155,7 @@ function App() {
               path="/crypto/:action"
               element={
                 auth ? (
-                  <BuySellPage auth={auth} />
+                  <BuySellPage auth={auth} instance={instance} web3={web3} />
                 ) : (
                   <Navigate to="/auth/login" />
                 )

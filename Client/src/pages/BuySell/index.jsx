@@ -9,8 +9,10 @@ import Chart from "./components/chart";
 import CoinConversionTable from "./components/CoinConversionTable";
 import { coinHolder } from "../../../data/coinBuySellPage";
 import { allCoins } from "./js/dataholder";
+import { unlockAccount } from "../../js/unlockWalletAddress";
 
-const BuySellPage = () => {
+const BuySellPage = (props) => {
+  const { instance, web3 } = props;
   const { action } = useParams();
   const navigate = useNavigate();
 
@@ -72,19 +74,43 @@ const BuySellPage = () => {
     setShowFull(!showFull);
   };
 
-  const handleSubmitBtn = (e) => {
+  const handleSubmitBtn = async (e) => {
     e.preventDefault();
 
-    const walletAddress = "";
     const coinId = selectedCoinId;
-    const amount = coinAmount;
-    const totalPrice = coinToUsdRate;
+    const amount = Math.ceil(coinAmount);
+    const totalPrice = Math.ceil(coinToUsdRate * amount);
     const transactionType = action;
 
-    console.log(selectedCoinId);
-    console.log(coinAmount);
-    console.log(coinToUsdRate);
-    console.log(action);
+    if (window.ethereum) {
+      try {
+        // Requesting access to the user's MetaMask account
+        const accounts = await window.ethereum.request({
+          method: "eth_requestAccounts",
+        });
+        const walletAddress = accounts[0]; // Using the first account from MetaMask
+        await unlockAccount(web3, walletAddress);
+
+        // Assuming instance is the contract instance
+        await instance.addTransaction(
+          walletAddress,
+          coinId,
+          amount,
+          totalPrice,
+          transactionType,
+          {
+            from: walletAddress,
+            value: totalPrice,
+          }
+        );
+
+        console.log("Transaction added successfully.");
+      } catch (error) {
+        console.error(error);
+      }
+    } else {
+      console.error("MetaMask not detected. Please install MetaMask.");
+    }
   };
 
   useEffect(() => {
