@@ -164,7 +164,11 @@ function App() {
             <Route
               path="/wallet"
               element={
-                auth ? <Wallet auth={auth} /> : <Navigate to="/auth/login" />
+                auth ? (
+                  <Wallet auth={auth} web3={web3} />
+                ) : (
+                  <Navigate to="/auth/login" />
+                )
               }
             />
             <Route path="/account" element={<Account />} />

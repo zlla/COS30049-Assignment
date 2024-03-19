@@ -7,7 +7,6 @@ import { FaBitcoin, FaUserPlus, FaShieldAlt } from "react-icons/fa";
 import "./style/index.css";
 import Chart from "./components/chart";
 import CoinConversionTable from "./components/CoinConversionTable";
-import { coinHolder } from "../../../data/coinBuySellPage";
 import { allCoins } from "./js/dataholder";
 import { unlockAccount } from "../../js/unlockWalletAddress";
 
@@ -18,14 +17,17 @@ const BuySellPage = (props) => {
 
   const [isLoading, setIsLoading] = useState(false);
   const [coinToUsdRate, setCoinToUsdRate] = useState(null);
-  const [coinAmount, setCoinAmount] = useState("");
-  const [usdAmount, setUsdAmount] = useState("");
+  const [coinAmount, setCoinAmount] = useState(0);
+  const [usdAmount, setUsdAmount] = useState(0);
   const [coin, setCoin] = useState(null);
 
   const [filteredCoins, setFilteredCoins] = useState([]);
   const [isSearchListOpen, setIsSearchListOpen] = useState(true);
   const [selectedCoinName, setSelectedCoinName] = useState("Bitcoin");
   const [selectedCoinId, setSelectedCoinId] = useState("bitcoin");
+
+  const [formError, setFormError] = useState("");
+  const [submitBtnStatus, setSubmitBtnStatus] = useState(false);
 
   const handleBuySellButton = (e) => {
     if (e.target.innerHTML.toLowerCase() !== action.toLowerCase()) {
@@ -56,15 +58,38 @@ const BuySellPage = (props) => {
   };
 
   const handleCoinInputChange = (e) => {
-    const inputCoinValue = e.target.value;
-    setCoinAmount(inputCoinValue);
-    setUsdAmount(inputCoinValue * coinToUsdRate);
+    let inputValue = e.target.value.trim(); // Remove leading/trailing whitespace
+    if (inputValue === "") {
+      inputValue = "1"; // Update to '1' if input is empty
+    }
+    let parsedValue = parseInt(inputValue); // Parse input as integer
+
+    // Check if the parsed value is a valid number
+    if (!isNaN(parsedValue) && parsedValue > 0) {
+      // If the input is a valid positive integer, update the state
+      setCoinAmount(parsedValue);
+      setUsdAmount(parsedValue * Math.ceil(coinToUsdRate));
+      setFormError(""); // Clear any previous form errors
+    } else {
+      // If the input is not a valid positive integer, display an error message
+      setFormError("Coin amount must be a positive integer.");
+    }
   };
 
   const handleUsdInputChange = (e) => {
-    const inputUsdValue = e.target.value;
-    setUsdAmount(inputUsdValue);
-    setCoinAmount(inputUsdValue / coinToUsdRate);
+    let inputValue = e.target.value.trim();
+    if (inputValue < coinToUsdRate) {
+      inputValue = coinToUsdRate;
+    }
+    let parsedValue = parseInt(inputValue); // Parse input as integer
+
+    if (!isNaN(parsedValue) && parsedValue >= coinToUsdRate) {
+      setUsdAmount(parsedValue);
+      setCoinAmount(Math.ceil(parsedValue / coinToUsdRate));
+      setFormError("");
+    } else {
+      setFormError("USD amount must be a positive integer.");
+    }
   };
 
   const [showFull, setShowFull] = useState(false);
@@ -75,47 +100,58 @@ const BuySellPage = (props) => {
   };
 
   const handleSubmitBtn = async (e) => {
-    e.preventDefault();
+    try {
+      e.preventDefault();
+      setSubmitBtnStatus(true);
 
-    const coinId = selectedCoinId;
-    const amount = Math.ceil(coinAmount);
-    const totalPrice = Math.ceil(coinToUsdRate * amount);
-    const transactionType = action;
+      const coinId = selectedCoinId;
+      const amount = Math.ceil(coinAmount);
+      const totalPrice = Math.ceil(coinToUsdRate * amount);
+      const transactionType = action;
 
-    if (window.ethereum) {
-      try {
-        // Requesting access to the user's MetaMask account
-        const accounts = await window.ethereum.request({
-          method: "eth_requestAccounts",
-        });
-        const walletAddress = accounts[0]; // Using the first account from MetaMask
-        await unlockAccount(web3, walletAddress);
+      setCoinAmount(amount);
+      setUsdAmount(totalPrice);
 
-        // Assuming instance is the contract instance
-        await instance.addTransaction(
-          walletAddress,
-          coinId,
-          amount,
-          totalPrice,
-          transactionType,
-          {
-            from: walletAddress,
-            value: totalPrice,
-          }
-        );
-
-        console.log("Transaction added successfully.");
-      } catch (error) {
-        console.error(error);
+      const confirmation = confirm(
+        `Are you sure to buy ${amount} with ${totalPrice} NPM`
+      );
+      if (!confirmation) {
+        setFormError("Transaction is cancelled!");
+        return;
       }
-    } else {
-      console.error("MetaMask not detected. Please install MetaMask.");
+
+      if (!window.ethereum) {
+        setFormError("MetaMask not detected. Please install MetaMask.");
+        return;
+      }
+
+      const accounts = await window.ethereum.request({
+        method: "eth_requestAccounts",
+      });
+      const walletAddress = accounts[0];
+      await unlockAccount(web3, walletAddress);
+
+      await instance.addTransaction(
+        walletAddress,
+        coinId,
+        amount,
+        totalPrice,
+        transactionType,
+        {
+          from: walletAddress,
+          value: totalPrice,
+        }
+      );
+
+      console.log("Transaction added successfully.");
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setSubmitBtnStatus(false);
     }
   };
 
   useEffect(() => {
-    let retryCount = 0;
-
     const fetchCoinById = async () => {
       try {
         const response = await axios.get(
@@ -124,15 +160,11 @@ const BuySellPage = (props) => {
 
         setCoin(response.data);
         setCoinToUsdRate(response.data.market_data.current_price.usd);
+        setUsdAmount(
+          Math.ceil(coinAmount * response.data.market_data.current_price.usd)
+        );
       } catch (error) {
-        console.log(error);
-        if (retryCount < 3) {
-          // Retry only 3 times
-          setTimeout(() => {
-            retryCount += 1;
-            fetchCoinById();
-          }, 300000); // Wait for 5 minutes before retrying
-        }
+        alert("Too many request, please wait a few minutes and try again!");
       }
     };
 
@@ -192,14 +224,18 @@ const BuySellPage = (props) => {
                   </Col>
                 </Row>
 
-                <form>
+                <form
+                  onChange={() => {
+                    setFormError("");
+                  }}
+                >
                   {/* Coin Amount Input */}
                   <div className="mb-3">
                     <label htmlFor="coinAmount" className="form-label">
                       Coin Amount
                     </label>
                     <input
-                      type="text"
+                      type="number"
                       className="form-control"
                       id="coinAmount"
                       value={coinAmount}
@@ -214,12 +250,13 @@ const BuySellPage = (props) => {
                       USD Amount
                     </label>
                     <input
-                      type="text"
+                      type="number"
                       className="form-control"
                       id="usdAmount"
                       value={usdAmount}
                       onChange={handleUsdInputChange}
-                      disabled={!selectedCoinId || coinToUsdRate === null}
+                      // disabled={!selectedCoinId || coinToUsdRate === null}
+                      disabled
                     />
                   </div>
                   {!selectedCoinId && (
@@ -288,10 +325,14 @@ const BuySellPage = (props) => {
                     </p>
                   )}
 
+                  <span className="text-danger">{formError}</span>
+                  <br />
+
                   <button
                     type="button"
                     className="btn btn-success"
                     onClick={(e) => handleSubmitBtn(e)}
+                    disabled={submitBtnStatus}
                   >
                     {action.charAt(0).toUpperCase() + action.slice(1)}
                   </button>
