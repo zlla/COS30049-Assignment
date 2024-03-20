@@ -99,5 +99,30 @@ namespace Server.Controllers
             return Ok();
         }
 
+        [HttpPost("isSameWallet")]
+        public async Task<IActionResult> IsSameWallet([FromBody] WalletAddressRequest request)
+        {
+            User? userFromDb = await GetUserFromAccessToken();
+            if (userFromDb == null)
+            {
+                return NotFound("User not found");
+            }
+
+            Wallet? wallet = await _db.Wallets.Where(w => w.UserId == userFromDb.Id).FirstOrDefaultAsync();
+            if (wallet == null) return NotFound("Wallet Not Exist");
+
+            if (wallet.WalletAddress != request.Value)
+            {
+                return BadRequest("Your wallet in Metamask must be the wallet you imported into the system.");
+            }
+
+            return Ok();
+        }
+
+    }
+
+    public class WalletAddressRequest
+    {
+        public required string Value { get; set; }
     }
 }

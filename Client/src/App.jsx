@@ -115,6 +115,7 @@ function App() {
 
         // Deploy the contract and get instance
         let temp2 = await contract.deployed();
+        console.log(temp2);
         setInstance(temp2);
       } catch (error) {
         console.error("Error deploying contract:", error);

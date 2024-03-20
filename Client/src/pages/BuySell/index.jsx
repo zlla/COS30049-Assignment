@@ -104,6 +104,7 @@ const BuySellPage = (props) => {
     try {
       e.preventDefault();
       setSubmitBtnStatus(true);
+      setFormError("");
 
       const coinId = selectedCoinId;
       const amount = Math.ceil(coinAmount);
@@ -130,7 +131,21 @@ const BuySellPage = (props) => {
         method: "eth_requestAccounts",
       });
       const walletAddress = accounts[0];
-      await unlockAccount(web3, walletAddress);
+
+      const config = {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+        },
+      };
+
+      await Promise.all([
+        axios.post(
+          `${apiUrl}/wallet/isSameWallet`,
+          { Value: walletAddress },
+          config
+        ),
+        unlockAccount(web3, walletAddress),
+      ]);
 
       await instance.addTransaction(
         walletAddress,
@@ -144,53 +159,47 @@ const BuySellPage = (props) => {
         }
       );
 
-      // const a = await instance.getContractBalance();
-      // console.log(a);
-
       const checkCoinExistInDb = async () => {
-        const config = {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-          },
-        };
-
         try {
-          await axios.get(
+          const response = await axios.get(
             `${apiUrl}/asset/checkAssetExist?coinId=${coinId}`,
             config
           );
 
-          const Amount = {
-            Amount: amount,
-          };
+          console.log(response.data);
+          if (response.data === true) {
+            const Amount = {
+              Amount: amount,
+            };
 
-          await axios.post(
-            `${apiUrl}/asset/updateAmountOfAsset`,
-            Amount,
-            config
-          );
-        } catch (error) {
-          const newAsset = {
-            Id: 0,
-            WalletId: 0,
-            CoinId: coinId,
-            Amount: amount,
-          };
-          if (error.response.status === 404 && error.response.data === false) {
-            try {
-              await axios.post(`${apiUrl}/asset/newAsset`, newAsset, config);
-            } catch (error) {
-              console.log(error);
-            }
+            await axios.post(
+              `${apiUrl}/asset/updateAmountOfAsset`,
+              Amount,
+              config
+            );
+          } else {
+            const newAsset = {
+              Id: 0,
+              WalletId: 0,
+              CoinId: coinId,
+              Amount: amount,
+            };
+
+            await axios.post(`${apiUrl}/asset/newAsset`, newAsset, config);
           }
+        } catch (error) {
+          console.log(error);
         }
       };
 
-      checkCoinExistInDb();
+      await checkCoinExistInDb();
+      alert("Transaction added successfully.");
 
-      console.log("Transaction added successfully.");
+      // const a = await instance.getContractBalance();
+      // console.log(a);
     } catch (error) {
-      console.error(error);
+      // console.error(error.response.data);
+      setFormError(error.response.data);
     } finally {
       setSubmitBtnStatus(false);
     }

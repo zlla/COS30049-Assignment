@@ -65,12 +65,13 @@ namespace Server.Controllers
                 return NotFound("User not found");
             }
 
-            bool status = false;
-            Asset? asset = await _db.Assets.Where(a => a.CoinId == coinId).FirstOrDefaultAsync();
-            if (asset == null) return NotFound(status);
+            Wallet? wallet = await _db.Wallets.Where(w => w.UserId == userFromDb.Id).FirstOrDefaultAsync();
+            if (wallet == null) return NotFound("Wallet Not Exist");
 
-            status = true;
-            return Ok(status);
+            bool status = false;
+            Asset? asset = await _db.Assets.Where(a => a.CoinId == coinId && a.WalletId == wallet.Id).FirstOrDefaultAsync();
+
+            return asset == null ? Ok(status) : Ok(status = true);
         }
 
         [HttpPost("newAsset")]
