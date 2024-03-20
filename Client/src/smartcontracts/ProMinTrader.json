@@ -9029,12 +9029,12 @@
     "8888": {
       "events": {},
       "links": {},
-      "address": "0xebDb5aeB7AE48918d3CDE274774C8c7aeF89Ae71",
-      "transactionHash": "0xcbafb2da929b19819a1b2d0847de9e91e47e7faf99065f497d172af93dba0dd4"
+      "address": "0xe3d473AcBcFE7Ab4F0e8C262392a2463d17D6199",
+      "transactionHash": "0xdc406ce59a65b1aa7f2e7eddc0f2e0c4307162cdb26d4db92bb879a7f244a45b"
     }
   },
   "schemaVersion": "3.4.16",
-  "updatedAt": "2024-03-19T02:13:28.879Z",
+  "updatedAt": "2024-03-20T01:48:22.147Z",
   "networkType": "ethereum",
   "devdoc": {
     "methods": {}

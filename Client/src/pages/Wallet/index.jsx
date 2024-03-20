@@ -34,7 +34,7 @@ const Wallet = (props) => {
       UserId: 0,
       WalletAddress: wallet.address,
       PrivateKey: privateKeyWithoutPrefix,
-      Balance: 0,
+      Balance: "0",
     };
 
     walletPost(data);
@@ -64,7 +64,7 @@ const Wallet = (props) => {
       UserId: 0,
       WalletAddress: walletAddress,
       PrivateKey: "",
-      Balance: balance,
+      Balance: balance.toString(),
     };
 
     walletPost(data);

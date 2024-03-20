@@ -11,7 +11,7 @@ namespace Server.Models
         [Required]
         public required string CoinId { get; set; }
         [Required]
-        public required string Amount { get; set; }
+        public required ulong Amount { get; set; }
         public virtual Wallet? Wallet { get; set; }
     }
 }

@@ -60,7 +60,7 @@ namespace Server.Migrations
                     UserId = table.Column<long>(type: "bigint", nullable: false),
                     WalletAddress = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     PrivateKey = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Balance = table.Column<long>(type: "bigint", nullable: false)
+                    Balance = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -103,7 +103,7 @@ namespace Server.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     WalletId = table.Column<long>(type: "bigint", nullable: false),
                     CoinId = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Amount = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    Amount = table.Column<decimal>(type: "decimal(20,0)", nullable: false)
                 },
                 constraints: table =>
                 {

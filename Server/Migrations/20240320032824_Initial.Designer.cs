@@ -12,7 +12,7 @@ using Server.Helpers;
 namespace Server.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240319030133_Initial")]
+    [Migration("20240320032824_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -61,9 +61,8 @@ namespace Server.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
-                    b.Property<string>("Amount")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(20,0)");
 
                     b.Property<string>("CoinId")
                         .IsRequired()
@@ -155,8 +154,9 @@ namespace Server.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
-                    b.Property<long>("Balance")
-                        .HasColumnType("bigint");
+                    b.Property<string>("Balance")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PrivateKey")
                         .HasColumnType("nvarchar(max)");

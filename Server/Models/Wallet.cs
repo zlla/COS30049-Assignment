@@ -12,7 +12,7 @@ namespace Server.Models
         public required string WalletAddress { get; set; }
         public string? PrivateKey { get; set; }
         [Required]
-        public required long Balance { get; set; }
+        public required string Balance { get; set; }
         public virtual User? User { get; set; }
         public virtual ICollection<Asset>? Assets { get; set; }
     }

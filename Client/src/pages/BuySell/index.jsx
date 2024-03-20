@@ -9,6 +9,7 @@ import Chart from "./components/chart";
 import CoinConversionTable from "./components/CoinConversionTable";
 import { allCoins } from "./js/dataholder";
 import { unlockAccount } from "../../js/unlockWalletAddress";
+import { apiUrl } from "../../settings/apiurl";
 
 const BuySellPage = (props) => {
   const { instance, web3 } = props;
@@ -142,6 +143,50 @@ const BuySellPage = (props) => {
           value: totalPrice,
         }
       );
+
+      // const a = await instance.getContractBalance();
+      // console.log(a);
+
+      const checkCoinExistInDb = async () => {
+        const config = {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          },
+        };
+
+        try {
+          await axios.get(
+            `${apiUrl}/asset/checkAssetExist?coinId=${coinId}`,
+            config
+          );
+
+          const Amount = {
+            Amount: amount,
+          };
+
+          await axios.post(
+            `${apiUrl}/asset/updateAmountOfAsset`,
+            Amount,
+            config
+          );
+        } catch (error) {
+          const newAsset = {
+            Id: 0,
+            WalletId: 0,
+            CoinId: coinId,
+            Amount: amount,
+          };
+          if (error.response.status === 404 && error.response.data === false) {
+            try {
+              await axios.post(`${apiUrl}/asset/newAsset`, newAsset, config);
+            } catch (error) {
+              console.log(error);
+            }
+          }
+        }
+      };
+
+      checkCoinExistInDb();
 
       console.log("Transaction added successfully.");
     } catch (error) {
