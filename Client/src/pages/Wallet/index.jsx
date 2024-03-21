@@ -5,9 +5,10 @@ import { apiUrl } from "../../settings/apiurl";
 const Wallet = (props) => {
   const { web3, instance } = props;
 
+  const [isLoadingTransactionsData, setIsLoadingTransactionsData] =
+    useState(true);
   const [walletCheck, setWalletCheck] = useState(false);
   const [transactions, setTransactions] = useState([]);
-  const [transactionsId, setTransactionsId] = useState([]);
 
   const walletPost = async (data) => {
     const config = {
@@ -73,6 +74,45 @@ const Wallet = (props) => {
     setWalletCheck(true);
   };
 
+  function convertUnixTimestamp(unixTimestamp) {
+    // Convert Unix timestamp to milliseconds
+    var unixTimestampInMillis = unixTimestamp * 1000;
+
+    // Create a new Date object with the Unix timestamp
+    var date = new Date(unixTimestampInMillis);
+
+    // Get the components of the date
+    var year = date.getFullYear();
+    var month = date.getMonth() + 1; // Month starts from 0
+    var day = date.getDate();
+    var hours = date.getHours();
+    var minutes = date.getMinutes();
+    var seconds = date.getSeconds();
+
+    // Format the components if needed (add leading zeros if necessary)
+    month = month < 10 ? "0" + month : month;
+    day = day < 10 ? "0" + day : day;
+    hours = hours < 10 ? "0" + hours : hours;
+    minutes = minutes < 10 ? "0" + minutes : minutes;
+    seconds = seconds < 10 ? "0" + seconds : seconds;
+
+    // Construct the formatted date string
+    var formattedDate =
+      year +
+      "-" +
+      month +
+      "-" +
+      day +
+      " " +
+      hours +
+      ":" +
+      minutes +
+      ":" +
+      seconds;
+
+    return formattedDate;
+  }
+
   useEffect(() => {
     const fetchWallet = async () => {
       const config = {
@@ -93,43 +133,23 @@ const Wallet = (props) => {
   }, []);
 
   useEffect(() => {
-    const fetchTransactionsId = async () => {
-      try {
-        let response = await instance.getTransactionsByAddress(
-          "0x6eBB5C18FC0fA7E211245043CF4BA6B9CA392c42"
-        );
+    if (instance != null) {
+      const fetchTransactionsId = async () => {
+        try {
+          let response = await instance.getTransactionsByWalletAddress(
+            "0x6eBB5C18FC0fA7E211245043CF4BA6B9CA392c42"
+          );
 
-        let temp = [];
-        response.forEach((element) => {
-          temp.push(element.words[0]);
-        });
+          setTransactions(response);
+          setIsLoadingTransactionsData(false);
+        } catch (error) {
+          console.log(error);
+        }
+      };
 
-        setTransactionsId(temp);
-      } catch (error) {
-        console.log(error);
-      }
-    };
-
-    fetchTransactionsId();
+      fetchTransactionsId();
+    }
   }, [instance]);
-
-  useEffect(() => {
-    const fetchTransactions = async () => {
-      try {
-        let temp = [];
-        transactionsId.forEach(async (element) => {
-          let response = await instance.getTransaction(element);
-          temp.push(response);
-        });
-
-        setTransactions(temp);
-      } catch (error) {
-        console.log(error);
-      }
-    };
-
-    fetchTransactions();
-  }, [transactionsId]);
 
   return (
     <>
@@ -159,7 +179,34 @@ const Wallet = (props) => {
           <div className="col-8 d-flex justify-content-between my-3 p-4 border border-primary rounded">
             <div>
               <h2>Recent Transactions</h2>
-              <p>no records</p>
+              {isLoadingTransactionsData ? (
+                <p>Loading ...</p>
+              ) : (
+                <table className="table">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Coin ID</th>
+                      <th>Amount</th>
+                      <th>Timestamp</th>
+                      <th>Transaction Type</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {transactions.map((transaction, index) => {
+                      return (
+                        <tr key={index}>
+                          <td>{transaction.id}</td>
+                          <td>{transaction.coinId}</td>
+                          <td>{transaction.amount}</td>
+                          <td>{convertUnixTimestamp(transaction.timestamp)}</td>
+                          <td>{transaction.transactionType}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              )}
             </div>
           </div>
         </div>
