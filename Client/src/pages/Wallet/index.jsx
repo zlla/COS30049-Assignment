@@ -3,9 +3,11 @@ import { useEffect, useState } from "react";
 import { apiUrl } from "../../settings/apiurl";
 
 const Wallet = (props) => {
-  const { web3 } = props;
+  const { web3, instance } = props;
 
   const [walletCheck, setWalletCheck] = useState(false);
+  const [transactions, setTransactions] = useState([]);
+  const [transactionsId, setTransactionsId] = useState([]);
 
   const walletPost = async (data) => {
     const config = {
@@ -89,6 +91,46 @@ const Wallet = (props) => {
 
     fetchWallet();
   }, []);
+
+  useEffect(() => {
+    const fetchTransactionsId = async () => {
+      try {
+        let response = await instance.getTransactionsByAddress(
+          "0x6eBB5C18FC0fA7E211245043CF4BA6B9CA392c42"
+        );
+
+        let temp = [];
+        response.forEach((element) => {
+          temp.push(element.words[0]);
+        });
+
+        setTransactionsId(temp);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    fetchTransactionsId();
+  }, [instance]);
+
+  useEffect(() => {
+    const fetchTransactions = async () => {
+      try {
+        let temp = [];
+        transactionsId.forEach(async (element) => {
+          let response = await instance.getTransaction(element);
+          temp.push(response);
+        });
+
+        setTransactions(temp);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    fetchTransactions();
+  }, [transactionsId]);
+
   return (
     <>
       {walletCheck ? (

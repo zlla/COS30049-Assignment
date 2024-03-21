@@ -166,7 +166,6 @@ const BuySellPage = (props) => {
             config
           );
 
-          console.log(response.data);
           if (response.data === true) {
             const Amount = {
               Amount: amount,
@@ -198,7 +197,6 @@ const BuySellPage = (props) => {
       // const a = await instance.getContractBalance();
       // console.log(a);
     } catch (error) {
-      // console.error(error.response.data);
       setFormError(error.response.data);
     } finally {
       setSubmitBtnStatus(false);

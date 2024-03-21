@@ -115,7 +115,6 @@ function App() {
 
         // Deploy the contract and get instance
         let temp2 = await contract.deployed();
-        console.log(temp2);
         setInstance(temp2);
       } catch (error) {
         console.error("Error deploying contract:", error);
@@ -166,7 +165,7 @@ function App() {
               path="/wallet"
               element={
                 auth ? (
-                  <Wallet auth={auth} web3={web3} />
+                  <Wallet auth={auth} web3={web3} instance={instance} />
                 ) : (
                   <Navigate to="/auth/login" />
                 )
