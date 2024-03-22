@@ -119,10 +119,64 @@ namespace Server.Controllers
             return Ok();
         }
 
+        [HttpPost("syncBalance")]
+        public async Task<IActionResult> SyncBalance([FromBody] SyncBalanceRequest request)
+        {
+            User? userFromDb = await GetUserFromAccessToken();
+            if (userFromDb == null)
+            {
+                return NotFound("User not found");
+            }
+
+            Wallet? wallet = await _db.Wallets.Where(w => w.UserId == userFromDb.Id).FirstOrDefaultAsync();
+            if (wallet == null)
+            {
+                return NotFound("Wallet not found");
+            }
+
+            wallet.Balance = request.Balance;
+            _db.Wallets.Update(wallet);
+            await _db.SaveChangesAsync();
+
+            return Ok();
+        }
+
+        [HttpGet("getWalletDetails")]
+        public async Task<IActionResult> GetWalletDetails()
+        {
+            User? userFromDb = await GetUserFromAccessToken();
+            if (userFromDb == null)
+            {
+                return NotFound("User not found");
+            }
+
+            Wallet? wallet = await _db.Wallets.Where(w => w.UserId == userFromDb.Id).FirstOrDefaultAsync();
+
+            if (wallet == null) return NotFound("Wallet not found");
+
+            WalletDetailsDTO walletDetailsDTO = new()
+            {
+                WalletAddress = wallet.WalletAddress,
+                PrivateKey = wallet.PrivateKey
+            };
+
+            return Ok(walletDetailsDTO);
+        }
     }
 
     public class WalletAddressRequest
     {
         public required string Value { get; set; }
+    }
+
+    public class SyncBalanceRequest
+    {
+        public required string Balance { get; set; }
+    }
+
+    public class WalletDetailsDTO
+    {
+        public required string WalletAddress { get; set; }
+        public string? PrivateKey { get; set; }
     }
 }

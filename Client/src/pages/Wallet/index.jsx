@@ -1,6 +1,7 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { apiUrl } from "../../settings/apiurl";
+import { unlockAccount } from "../../js/unlockWalletAddress";
 
 const Wallet = (props) => {
   const { web3, instance } = props;
@@ -10,6 +11,9 @@ const Wallet = (props) => {
   const [walletCheck, setWalletCheck] = useState(false);
   const [transactions, setTransactions] = useState([]);
   const [assets, setAssets] = useState([]);
+  const [walletAddress, setWalletAddress] = useState("");
+  const [balance, setBalance] = useState(null);
+  const [walletDetails, setWalletDetails] = useState([]);
 
   const walletPost = async (data) => {
     const config = {
@@ -114,6 +118,76 @@ const Wallet = (props) => {
     return formattedDate;
   }
 
+  const checkSameWallet = async () => {
+    try {
+      if (!window.ethereum) {
+        alert("MetaMask not detected. Please install MetaMask.");
+        return;
+      }
+
+      const accounts = await window.ethereum.request({
+        method: "eth_requestAccounts",
+      });
+      const walletAddress = accounts[0];
+
+      const config = {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+        },
+      };
+
+      await Promise.all([
+        axios.post(
+          `${apiUrl}/wallet/isSameWallet`,
+          { Value: walletAddress },
+          config
+        ),
+        setWalletAddress(walletAddress),
+      ]);
+    } catch (error) {
+      alert(error.response.data);
+      setWalletAddress("");
+    }
+  };
+
+  function formatCurrency(amount) {
+    amount = parseFloat(amount);
+    if (amount >= 1000000) {
+      return (amount / 1000000).toFixed(2) + "m";
+    } else if (amount >= 1000) {
+      return (amount / 1000).toFixed(2) + "k";
+    } else {
+      return amount.toFixed(2);
+    }
+  }
+
+  const showWalletDetails = async (e) => {
+    e.preventDefault();
+
+    const config = {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+      },
+    };
+
+    try {
+      await unlockAccount(web3, walletAddress);
+    } catch (error) {
+      alert("Wrong Password. Try again!");
+      return;
+    }
+
+    try {
+      const response = await axios.get(
+        `${apiUrl}/wallet/getWalletDetails`,
+        config
+      );
+      setWalletDetails(response.data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   useEffect(() => {
     const config = {
       headers: {
@@ -144,11 +218,15 @@ const Wallet = (props) => {
   }, []);
 
   useEffect(() => {
-    if (instance != null) {
+    if (walletCheck) checkSameWallet();
+  }, [walletCheck]);
+
+  useEffect(() => {
+    if (instance !== null && walletAddress !== "") {
       const fetchTransactions = async () => {
         try {
           let response = await instance.getTransactionsByWalletAddress(
-            "0x6eBB5C18FC0fA7E211245043CF4BA6B9CA392c42"
+            walletAddress
           );
 
           setTransactions(response);
@@ -160,7 +238,50 @@ const Wallet = (props) => {
 
       fetchTransactions();
     }
-  }, [instance]);
+  }, [instance, walletAddress]);
+
+  useEffect(() => {
+    const getBalance = async () => {
+      const result = await web3.eth.getBalance(walletAddress);
+      setBalance(result);
+    };
+
+    if (walletCheck === true && walletAddress !== "") {
+      getBalance();
+    }
+  }, [web3, walletCheck, walletAddress]);
+
+  useEffect(() => {
+    const config = {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+      },
+    };
+
+    const syncBalance = async () => {
+      if (balance !== null) {
+        const dataRequest = {
+          Balance: balance,
+        };
+
+        try {
+          await axios.post(`${apiUrl}/wallet/syncBalance`, dataRequest, config);
+        } catch (error) {
+          console.log(error);
+        }
+      }
+    };
+
+    syncBalance();
+  }, [balance]);
+
+  useEffect(() => {
+    if (walletDetails.walletAddress && walletDetails.walletAddress !== "") {
+      setTimeout(() => {
+        setWalletDetails([]);
+      }, 30000);
+    }
+  }, [walletDetails]);
 
   return (
     <>
@@ -170,9 +291,42 @@ const Wallet = (props) => {
             <div>
               <h3>Estimated Balance</h3>
               <h3>
-                <b className="me-2">0.00</b>PRM
+                <b className="me-2">{formatCurrency(balance)}</b>PRM
               </h3>
-              <p className="">=$0.00</p>
+              <p className="">=${formatCurrency(balance)}</p>
+
+              {!walletDetails.walletAddress ? (
+                <a href="#" onClick={(e) => showWalletDetails(e)}>
+                  Show Wallet Details
+                </a>
+              ) : (
+                <a
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setWalletDetails([]);
+                  }}
+                >
+                  Hide Wallet Details
+                </a>
+              )}
+
+              {walletDetails.walletAddress &&
+              walletDetails.walletAddress !== "" ? (
+                <div>
+                  <p>Wallet Address: {walletDetails.walletAddress}</p>
+                  <p>
+                    {walletDetails.privateKey && walletDetails.privateKey !== ""
+                      ? `Private Key: ${walletDetails.privateKey}`
+                      : "The private key will only be displayed if you choose to create a new wallet beforehand."}
+                  </p>
+                  <span className="text-danger">
+                    This will auto hidden after 30s
+                  </span>
+                </div>
+              ) : (
+                ""
+              )}
             </div>
             <div>
               <button className="btn btn-primary mx-1">deposit</button>
