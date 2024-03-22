@@ -121,6 +121,24 @@ namespace Server.Controllers
 
             return Ok();
         }
+
+        [HttpGet("getAssets")]
+        public async Task<IActionResult> GetAssets()
+        {
+            User? userFromDb = await GetUserFromAccessToken();
+            if (userFromDb == null)
+            {
+                return NotFound("User not found");
+            }
+
+            List<Asset> assets = await _db.Assets
+                    .Join(_db.Wallets, a => a.WalletId, w => w.Id, (a, w) => new { Asset = a, Wallet = w })
+                    .Where(aw => aw.Wallet.UserId == userFromDb.Id)
+                    .Select(aw => aw.Asset)
+                    .ToListAsync();
+
+            return Ok(assets);
+        }
     }
 
     public class UpdateAmountOfAssetRequest

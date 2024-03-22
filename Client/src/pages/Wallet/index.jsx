@@ -9,6 +9,7 @@ const Wallet = (props) => {
     useState(true);
   const [walletCheck, setWalletCheck] = useState(false);
   const [transactions, setTransactions] = useState([]);
+  const [assets, setAssets] = useState([]);
 
   const walletPost = async (data) => {
     const config = {
@@ -114,13 +115,13 @@ const Wallet = (props) => {
   }
 
   useEffect(() => {
-    const fetchWallet = async () => {
-      const config = {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-        },
-      };
+    const config = {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+      },
+    };
 
+    const fetchWallet = async () => {
       try {
         await axios.get(`${apiUrl}/wallet/checkWalletExist`, config);
         setWalletCheck(true);
@@ -129,12 +130,22 @@ const Wallet = (props) => {
       }
     };
 
+    const fetchAssets = async () => {
+      try {
+        const response = await axios.get(`${apiUrl}/asset/getAssets`, config);
+        setAssets(response.data);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
     fetchWallet();
+    fetchAssets();
   }, []);
 
   useEffect(() => {
     if (instance != null) {
-      const fetchTransactionsId = async () => {
+      const fetchTransactions = async () => {
         try {
           let response = await instance.getTransactionsByWalletAddress(
             "0x6eBB5C18FC0fA7E211245043CF4BA6B9CA392c42"
@@ -147,7 +158,7 @@ const Wallet = (props) => {
         }
       };
 
-      fetchTransactionsId();
+      fetchTransactions();
     }
   }, [instance]);
 
@@ -173,7 +184,26 @@ const Wallet = (props) => {
             <div>
               <h2>My Assets</h2>
               <p>Coin View</p>
-              <div>list...</div>
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Wallet ID</th>
+                    <th>Coin ID</th>
+                    <th>Amount</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {assets.map((item) => (
+                    <tr key={item.id}>
+                      <td>{item.id}</td>
+                      <td>{item.walletId}</td>
+                      <td>{item.coinId}</td>
+                      <td>{item.amount}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
           <div className="col-8 d-flex justify-content-between my-3 p-4 border border-primary rounded">
