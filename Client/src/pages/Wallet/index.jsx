@@ -2,6 +2,7 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { apiUrl } from "../../settings/apiurl";
 import { unlockAccount } from "../../js/unlockWalletAddress";
+import { Alert } from "react-bootstrap";
 
 const Wallet = (props) => {
   const { web3, instance } = props;
@@ -14,6 +15,7 @@ const Wallet = (props) => {
   const [walletAddress, setWalletAddress] = useState("");
   const [balance, setBalance] = useState(null);
   const [walletDetails, setWalletDetails] = useState([]);
+  const [isSyncWallet, setIsSyncWallet] = useState(false);
 
   const walletPost = async (data) => {
     const config = {
@@ -136,17 +138,21 @@ const Wallet = (props) => {
         },
       };
 
-      await Promise.all([
-        axios.post(
-          `${apiUrl}/wallet/isSameWallet`,
-          { Value: walletAddress },
-          config
-        ),
-        setWalletAddress(walletAddress),
-      ]);
+      await axios
+        .post(`${apiUrl}/wallet/isSameWallet`, { Value: walletAddress }, config)
+        .then(() => {
+          setWalletAddress(walletAddress);
+          setIsSyncWallet(true);
+        })
+        .catch((error) => {
+          if (error.response && error.response.data) {
+            alert(error.response.data);
+            setIsSyncWallet(false);
+            setWalletAddress("");
+          }
+        });
     } catch (error) {
-      alert(error.response.data);
-      setWalletAddress("");
+      alert("An error occurred while checking wallet.");
     }
   };
 
@@ -170,8 +176,19 @@ const Wallet = (props) => {
       },
     };
 
+    let tempAddress = "";
     try {
-      await unlockAccount(web3, walletAddress);
+      const response = await axios.get(
+        `${apiUrl}/wallet/getWalletAddress`,
+        config
+      );
+      tempAddress = response.data;
+    } catch (error) {
+      console.log(error);
+    }
+
+    try {
+      await unlockAccount(web3, tempAddress);
     } catch (error) {
       alert("Wrong Password. Try again!");
       return;
@@ -185,6 +202,24 @@ const Wallet = (props) => {
       setWalletDetails(response.data);
     } catch (error) {
       console.log(error);
+    }
+  };
+
+  const buyPRM = async () => {
+    // unlockAccount(web3, walletAddress);
+
+    if (web3) {
+      try {
+        let firstWallet = await web3.eth.getAccounts();
+        await web3.eth.sendTransaction({
+          to: walletAddress,
+          from: firstWallet[0],
+          value: 10000000000000000000,
+        });
+        alert("Ok");
+      } catch (error) {
+        console.log(error);
+      }
     }
   };
 
@@ -218,7 +253,9 @@ const Wallet = (props) => {
   }, []);
 
   useEffect(() => {
-    if (walletCheck) checkSameWallet();
+    if (walletCheck) {
+      checkSameWallet();
+    }
   }, [walletCheck]);
 
   useEffect(() => {
@@ -246,10 +283,10 @@ const Wallet = (props) => {
       setBalance(result);
     };
 
-    if (walletCheck === true && walletAddress !== "") {
+    if (isSyncWallet === true && walletAddress !== "") {
       getBalance();
     }
-  }, [web3, walletCheck, walletAddress]);
+  }, [web3, isSyncWallet, walletAddress]);
 
   useEffect(() => {
     const config = {
@@ -272,8 +309,10 @@ const Wallet = (props) => {
       }
     };
 
-    syncBalance();
-  }, [balance]);
+    if (isSyncWallet === true) {
+      syncBalance();
+    }
+  }, [balance, isSyncWallet]);
 
   useEffect(() => {
     if (walletDetails.walletAddress && walletDetails.walletAddress !== "") {
@@ -292,6 +331,12 @@ const Wallet = (props) => {
               <h3>Estimated Balance</h3>
               <h3>
                 <b className="me-2">{formatCurrency(balance)}</b>PRM
+                <button
+                  className="ms-2 btn btn-success"
+                  onClick={() => buyPRM()}
+                >
+                  +
+                </button>
               </h3>
               <p className="">=${formatCurrency(balance)}</p>
 

@@ -34,8 +34,6 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<Wallet>()
             .HasMany(w => w.Assets).WithOne(a => a.Wallet).HasForeignKey(a => a.WalletId);
 
-        modelBuilder.Entity<Asset>()
-            .HasOne(a => a.SystemCoin).WithOne(s => s.Asset).HasForeignKey<Asset>(a => a.CoinId);
     }
 }
 

@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button, Row, Col } from "react-bootstrap";
 import { FaBitcoin, FaUserPlus, FaShieldAlt } from "react-icons/fa";
+import { MdAttachMoney } from "react-icons/md";
 
 import "./style/index.css";
 import CoinConversionTable from "./components/CoinConversionTable";
@@ -65,12 +66,12 @@ const BuySellPage = (props) => {
   const handleCoinInputChange = (e) => {
     let inputValue = e.target.value.trim(); // Remove leading/trailing whitespace
     if (inputValue === "") {
-      inputValue = "1"; // Update to '1' if input is empty
+      inputValue = "0";
     }
     let parsedValue = parseInt(inputValue); // Parse input as integer
 
     // Check if the parsed value is a valid number
-    if (!isNaN(parsedValue) && parsedValue > 0) {
+    if (!isNaN(parsedValue)) {
       // If the input is a valid positive integer, update the state
       setCoinAmount(parsedValue);
       setUsdAmount(parsedValue * Math.ceil(coinToUsdRate));
@@ -81,119 +82,114 @@ const BuySellPage = (props) => {
     }
   };
 
-  const handleUsdInputChange = (e) => {
-    let inputValue = e.target.value.trim();
-    if (inputValue < coinToUsdRate) {
-      inputValue = coinToUsdRate;
-    }
-    let parsedValue = parseInt(inputValue); // Parse input as integer
-
-    if (!isNaN(parsedValue) && parsedValue >= coinToUsdRate) {
-      setUsdAmount(parsedValue);
-      setCoinAmount(Math.ceil(parsedValue / coinToUsdRate));
-      setFormError("");
-    } else {
-      setFormError("USD amount must be a positive integer.");
-    }
-  };
-
   const handleSubmitBtn = async (e) => {
-    try {
-      e.preventDefault();
-      setSubmitBtnStatus(true);
-      setFormError("");
+    e.preventDefault();
+    setFormError("");
 
-      const coinId = selectedCoinId;
-      const amount = Math.ceil(coinAmount);
-      const totalPrice = Math.ceil(coinToUsdRate * amount);
-      const transactionType = action;
+    if (selectedCoinId && coinAmount && coinToUsdRate && action) {
+      try {
+        setSubmitBtnStatus(true);
 
-      setCoinAmount(amount);
-      setUsdAmount(totalPrice);
-
-      const confirmation = confirm(
-        `Are you sure to ${action} ${amount} with ${totalPrice} NPM`
-      );
-      if (!confirmation) {
-        setFormError("Transaction is cancelled!");
-        return;
-      }
-
-      if (!window.ethereum) {
-        setFormError("MetaMask not detected. Please install MetaMask.");
-        return;
-      }
-
-      const accounts = await window.ethereum.request({
-        method: "eth_requestAccounts",
-      });
-      const walletAddress = accounts[0];
-
-      const config = {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-        },
-      };
-
-      await Promise.all([
-        axios.post(
-          `${apiUrl}/wallet/isSameWallet`,
-          { Value: walletAddress },
-          config
-        ),
-        unlockAccount(web3, walletAddress),
-      ]);
-
-      await instance.addTransaction(
-        walletAddress,
-        coinId,
-        amount,
-        totalPrice,
-        transactionType,
-        {
-          from: walletAddress,
-          value: totalPrice,
+        const confirmation = confirm(
+          `Are you sure to ${action} ${coinAmount} with ${usdAmount} NPM`
+        );
+        if (!confirmation) {
+          setFormError("Transaction is cancelled!");
+          return;
         }
-      );
 
-      const checkCoinExistInDb = async () => {
-        try {
-          const response = await axios.get(
-            `${apiUrl}/asset/checkAssetExist?coinId=${coinId}`,
+        if (!window.ethereum) {
+          setFormError("MetaMask not detected. Please install MetaMask.");
+          return;
+        }
+
+        const accounts = await window.ethereum.request({
+          method: "eth_requestAccounts",
+        });
+        const walletAddress = accounts[0];
+
+        const config = {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          },
+        };
+
+        await Promise.all([
+          axios.post(
+            `${apiUrl}/wallet/isSameWallet`,
+            { Value: walletAddress },
             config
+          ),
+          unlockAccount(web3, walletAddress),
+        ]);
+
+        if (action == "buy") {
+          await instance.addTransaction(
+            walletAddress,
+            selectedCoinId,
+            coinAmount,
+            usdAmount,
+            action,
+            {
+              from: walletAddress,
+              value: usdAmount,
+            }
           );
+        } else {
+          await instance.addTransaction(
+            walletAddress,
+            selectedCoinId,
+            coinAmount,
+            usdAmount,
+            action,
+            {
+              from: walletAddress,
+            }
+          );
+        }
 
-          if (response.data === true) {
-            const Amount = {
-              Amount: amount,
-            };
-
-            await axios.post(
-              `${apiUrl}/asset/updateAmountOfAsset`,
-              Amount,
+        const checkCoinExistInDb = async () => {
+          try {
+            const response = await axios.get(
+              `${apiUrl}/asset/checkAssetExist?coinId=${selectedCoinId}`,
               config
             );
-          } else {
-            const newAsset = {
-              Id: 0,
-              WalletId: 0,
-              CoinId: coinId,
-              Amount: amount,
-            };
 
-            await axios.post(`${apiUrl}/asset/newAsset`, newAsset, config);
+            if (response.data === true) {
+              const Amount = {
+                Amount: coinAmount,
+              };
+
+              await axios.post(
+                `${apiUrl}/asset/updateAmountOfAsset`,
+                Amount,
+                config
+              );
+            } else {
+              const newAsset = {
+                Id: 0,
+                WalletId: 0,
+                CoinId: selectedCoinId,
+                Amount: coinAmount,
+              };
+
+              await axios.post(`${apiUrl}/asset/newAsset`, newAsset, config);
+            }
+          } catch (error) {
+            console.log(error);
           }
-        } catch (error) {
-          console.log(error);
-        }
-      };
+        };
 
-      await checkCoinExistInDb();
-      alert("Transaction added successfully.");
-    } catch (error) {
-      setFormError(error.response.data);
-    } finally {
-      setSubmitBtnStatus(false);
+        await checkCoinExistInDb();
+        alert("Transaction added successfully.");
+      } catch (error) {
+        console.log(error);
+        setFormError(error.response.data);
+      } finally {
+        setSubmitBtnStatus(false);
+      }
+    } else {
+      setFormError("Form data not valid");
     }
   };
 
@@ -275,7 +271,7 @@ const BuySellPage = (props) => {
                       Coin Amount
                     </label>
                     <input
-                      type="number"
+                      type="text"
                       className="form-control"
                       id="coinAmount"
                       value={coinAmount}
@@ -286,19 +282,12 @@ const BuySellPage = (props) => {
 
                   {/* USD Amount Input */}
                   <div className="mb-3">
-                    <label htmlFor="usdAmount" className="form-label">
-                      USD Amount
-                    </label>
-                    <input
-                      type="number"
-                      className="form-control"
-                      id="usdAmount"
-                      value={usdAmount}
-                      onChange={handleUsdInputChange}
-                      // disabled={!selectedCoinId || coinToUsdRate === null}
-                      disabled
-                    />
+                    <div className="d-flex align-items-center">
+                      <MdAttachMoney size={24} />
+                      <p className="m-0 fs-5 fw-bold">{`${usdAmount}`}</p>
+                    </div>
                   </div>
+
                   {!selectedCoinId && (
                     <span style={{ color: "red" }}>
                       *Please select Coin Type first!

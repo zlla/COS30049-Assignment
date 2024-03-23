@@ -13,6 +13,5 @@ namespace Server.Models
         [Required]
         public required ulong Amount { get; set; }
         public virtual Wallet? Wallet { get; set; }
-        public virtual SystemCoin? SystemCoin { get; set; }
     }
 }

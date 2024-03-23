@@ -9345,12 +9345,12 @@
     "8888": {
       "events": {},
       "links": {},
-      "address": "0xC8f78D7B3cAb6cE16B16f2055CfE3Ae418a17b3e",
-      "transactionHash": "0x26bc0316379e8e5baeac6ed31721600c03eaf6b7fad3878394f08c4b3ddb684b"
+      "address": "0xE7fb7D9a06fAfc4B44159C43aA71A01D214207bE",
+      "transactionHash": "0x3edfde76e94e3d79f7008117a00d83e37bcfab7bc89067792f4c3823bb15a002"
     }
   },
   "schemaVersion": "3.4.16",
-  "updatedAt": "2024-03-22T13:37:01.320Z",
+  "updatedAt": "2024-03-23T16:42:23.452Z",
   "networkType": "ethereum",
   "devdoc": {
     "methods": {}

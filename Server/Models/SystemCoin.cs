@@ -11,6 +11,5 @@ namespace Server.Models
         public string? Description { get; set; }
         [Required]
         public required ulong Price { get; set; }
-        public virtual Asset? Asset { get; set; }
     }
 }

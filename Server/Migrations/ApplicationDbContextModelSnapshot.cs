@@ -56,15 +56,12 @@ namespace Server.Migrations
 
                     b.Property<string>("CoinId")
                         .IsRequired()
-                        .HasColumnType("varchar(255)");
+                        .HasColumnType("longtext");
 
                     b.Property<long>("WalletId")
                         .HasColumnType("bigint");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("CoinId")
-                        .IsUnique();
 
                     b.HasIndex("WalletId");
 
@@ -195,19 +192,11 @@ namespace Server.Migrations
 
             modelBuilder.Entity("Server.Models.Asset", b =>
                 {
-                    b.HasOne("Server.Models.SystemCoin", "SystemCoin")
-                        .WithOne("Asset")
-                        .HasForeignKey("Server.Models.Asset", "CoinId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("Server.Models.Wallet", "Wallet")
                         .WithMany("Assets")
                         .HasForeignKey("WalletId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("SystemCoin");
 
                     b.Navigation("Wallet");
                 });
@@ -237,11 +226,6 @@ namespace Server.Migrations
             modelBuilder.Entity("Server.Models.RefreshToken", b =>
                 {
                     b.Navigation("AccessTokens");
-                });
-
-            modelBuilder.Entity("Server.Models.SystemCoin", b =>
-                {
-                    b.Navigation("Asset");
                 });
 
             modelBuilder.Entity("Server.Models.User", b =>

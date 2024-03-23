@@ -111,7 +111,7 @@ namespace Server.Controllers
             Wallet? wallet = await _db.Wallets.Where(w => w.UserId == userFromDb.Id).FirstOrDefaultAsync();
             if (wallet == null) return NotFound("Wallet Not Exist");
 
-            if (wallet.WalletAddress != request.Value)
+            if (wallet.WalletAddress.ToLower() != request.Value.ToLower())
             {
                 return BadRequest("Your wallet in Metamask must be the wallet you imported into the system.");
             }
@@ -139,6 +139,21 @@ namespace Server.Controllers
             await _db.SaveChangesAsync();
 
             return Ok();
+        }
+
+        [HttpGet("getWalletAddress")]
+        public async Task<IActionResult> GetWalletAddress()
+        {
+            User? userFromDb = await GetUserFromAccessToken();
+            if (userFromDb == null)
+            {
+                return NotFound("User not found");
+            }
+
+            Wallet? wallet = await _db.Wallets.Where(w => w.UserId == userFromDb.Id).FirstOrDefaultAsync();
+            if (wallet == null) NotFound();
+
+            return Ok(wallet?.WalletAddress);
         }
 
         [HttpGet("getWalletDetails")]
