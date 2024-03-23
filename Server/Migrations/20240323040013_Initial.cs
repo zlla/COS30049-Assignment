@@ -16,6 +16,24 @@ namespace Server.Migrations
                 .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
+                name: "SystemCoins",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "varchar(255)", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Name = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Description = table.Column<string>(type: "longtext", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Price = table.Column<ulong>(type: "bigint unsigned", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_SystemCoins", x => x.Id);
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder.CreateTable(
                 name: "Users",
                 columns: table => new
                 {
@@ -121,13 +139,19 @@ namespace Server.Migrations
                     Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     WalletId = table.Column<long>(type: "bigint", nullable: false),
-                    CoinId = table.Column<string>(type: "longtext", nullable: false)
+                    CoinId = table.Column<string>(type: "varchar(255)", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     Amount = table.Column<ulong>(type: "bigint unsigned", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Assets", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Assets_SystemCoins_CoinId",
+                        column: x => x.CoinId,
+                        principalTable: "SystemCoins",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_Assets_Wallets_WalletId",
                         column: x => x.WalletId,
@@ -141,6 +165,12 @@ namespace Server.Migrations
                 name: "IX_AccessTokens_RtId",
                 table: "AccessTokens",
                 column: "RtId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Assets_CoinId",
+                table: "Assets",
+                column: "CoinId",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Assets_WalletId",
@@ -181,6 +211,9 @@ namespace Server.Migrations
 
             migrationBuilder.DropTable(
                 name: "RefreshTokens");
+
+            migrationBuilder.DropTable(
+                name: "SystemCoins");
 
             migrationBuilder.DropTable(
                 name: "Wallets");

@@ -5,9 +5,7 @@ import { Button, Row, Col } from "react-bootstrap";
 import { FaBitcoin, FaUserPlus, FaShieldAlt } from "react-icons/fa";
 
 import "./style/index.css";
-import Chart from "./components/chart";
 import CoinConversionTable from "./components/CoinConversionTable";
-import { allCoins } from "./js/dataholder";
 import { unlockAccount } from "../../js/unlockWalletAddress";
 import { apiUrl } from "../../settings/apiurl";
 
@@ -16,16 +14,16 @@ const BuySellPage = (props) => {
   const { action } = useParams();
   const navigate = useNavigate();
 
+  const [allSystemCoins, setAllSystemCoins] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [coinToUsdRate, setCoinToUsdRate] = useState(null);
   const [coinAmount, setCoinAmount] = useState(0);
   const [usdAmount, setUsdAmount] = useState(0);
-  const [coin, setCoin] = useState(null);
 
   const [filteredCoins, setFilteredCoins] = useState([]);
   const [isSearchListOpen, setIsSearchListOpen] = useState(true);
-  const [selectedCoinName, setSelectedCoinName] = useState("Bitcoin");
-  const [selectedCoinId, setSelectedCoinId] = useState("bitcoin");
+  const [selectedCoinName, setSelectedCoinName] = useState("");
+  const [selectedCoinId, setSelectedCoinId] = useState("");
 
   const [formError, setFormError] = useState("");
   const [submitBtnStatus, setSubmitBtnStatus] = useState(false);
@@ -42,9 +40,9 @@ const BuySellPage = (props) => {
 
   const handleSearchInputChange = (e) => {
     const searchInput = e.target.value.toLowerCase();
-    const filtered = allCoins.filter(
+    const filtered = allSystemCoins.filter(
       (coin) =>
-        coin.symbol.toLowerCase().includes(searchInput) ||
+        coin.name.toLowerCase().includes(searchInput.toString()) ||
         coin.id.toLowerCase().includes(searchInput.toString())
     );
     const firstFiveFiltered = filtered.slice(0, 5);
@@ -55,7 +53,13 @@ const BuySellPage = (props) => {
   const handleCoinSelect = (coin) => {
     setSelectedCoinId(coin.id);
     setSelectedCoinName(coin.name);
+    setCoinToUsdRate(coin.price);
     setFilteredCoins([]);
+
+    const coinInput = document.getElementById("coinSearch");
+    if (coinInput) {
+      coinInput.value = coin.name;
+    }
   };
 
   const handleCoinInputChange = (e) => {
@@ -93,13 +97,6 @@ const BuySellPage = (props) => {
     }
   };
 
-  const [showFull, setShowFull] = useState(false);
-  const maxLength = 500;
-
-  const toggleShow = () => {
-    setShowFull(!showFull);
-  };
-
   const handleSubmitBtn = async (e) => {
     try {
       e.preventDefault();
@@ -115,7 +112,7 @@ const BuySellPage = (props) => {
       setUsdAmount(totalPrice);
 
       const confirmation = confirm(
-        `Are you sure to buy ${amount} with ${totalPrice} NPM`
+        `Are you sure to ${action} ${amount} with ${totalPrice} NPM`
       );
       if (!confirmation) {
         setFormError("Transaction is cancelled!");
@@ -193,9 +190,6 @@ const BuySellPage = (props) => {
 
       await checkCoinExistInDb();
       alert("Transaction added successfully.");
-
-      // const a = await instance.getContractBalance();
-      // console.log(a);
     } catch (error) {
       setFormError(error.response.data);
     } finally {
@@ -204,26 +198,20 @@ const BuySellPage = (props) => {
   };
 
   useEffect(() => {
-    const fetchCoinById = async () => {
-      try {
-        const response = await axios.get(
-          `https://api.coingecko.com/api/v3/coins/${selectedCoinId}?tickers=false&market_data=true&community_data=false&developer_data=false&sparkline=false`
-        );
+    setIsLoading(true);
 
-        setCoin(response.data);
-        setCoinToUsdRate(response.data.market_data.current_price.usd);
-        setUsdAmount(
-          Math.ceil(coinAmount * response.data.market_data.current_price.usd)
-        );
-      } catch (error) {
-        alert("Too many request, please wait a few minutes and try again!");
-      }
-    };
-
-    if (selectedCoinId !== "") {
-      fetchCoinById();
-    }
-  }, [selectedCoinId]);
+    axios
+      .get(`${apiUrl}/SystemCoin/GetCoins`)
+      .then(async (response) => {
+        setAllSystemCoins(response.data);
+      })
+      .catch((error) => {
+        console.log(error);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  }, []);
 
   return (
     <div className="container mt-5">
@@ -325,7 +313,7 @@ const BuySellPage = (props) => {
                   {/* Coin Search Input */}
                   <div className="mb-3">
                     <label htmlFor="coinSearch" className="form-label">
-                      Coin Type (Default is <b>Bitcoin</b>)
+                      Coin Type
                     </label>
                     <input
                       type="text"
@@ -340,17 +328,6 @@ const BuySellPage = (props) => {
                   <div className="mb-3">
                     {isSearchListOpen && filteredCoins.length > 0 && (
                       <div>
-                        {/* <button
-                          type="button"
-                          className="btn btn-secondary"
-                          onClick={() => {
-                            setFilteredCoins([]);
-                            setIsSearchListOpen(false);
-                          }}
-                        >
-                          Close
-                        </button> */}
-
                         <ul className="list-group">
                           {filteredCoins.map((coin) => (
                             <li
@@ -395,68 +372,9 @@ const BuySellPage = (props) => {
           {isLoading && <h1>Loading ...</h1>}
         </div>
       </div>
-      <div className="row  m-5">
-        <div className="col-md-6">
-          {selectedCoinId && coin && (
-            <div>
-              <div className="d-flex justify-content-between">
-                <h3>{selectedCoinName}/USD</h3>
-                <div>
-                  <h5>{coin?.market_data.price_change_24h}%</h5>
-                  <h3>${coin?.market_data.current_price.usd}</h3>
-                </div>
-              </div>
-              <Chart coinId={selectedCoinId} />
-            </div>
-          )}
-        </div>
-        {coin && (
-          <div className="col-md-6">
-            <h3>{selectedCoinName} Markets</h3>
-            <div className="d-flex">
-              <p className="font-weight-bold me-4 lead ">
-                market cap rank <br />
-                <b className="text-info">
-                  #{coin?.market_data.market_cap_rank}
-                </b>
-              </p>
-              <p className="font-weight-bold lead">
-                market cap <br />
-                <b className="text-info">{coin?.market_data.market_cap.usd}</b>
-              </p>
-            </div>
-            <div className="d-flex">
-              <p className="font-weight-bold me-4 lead">
-                total volume <br />
-                <b className="text-info">
-                  {coin?.market_data.total_volume.usd}
-                </b>
-              </p>
-              <p className="font-weight-bold lead">
-                circulating supply <br />
-                <b className="text-info">
-                  {coin?.market_data.circulating_supply}
-                </b>
-              </p>
-            </div>
-            <div>
-              <p>
-                {showFull
-                  ? coin?.description.en
-                  : `${coin?.description.en.slice(0, maxLength)}...`}
-              </p>
-              <a
-                onClick={toggleShow}
-                className={`btn btn-link ${showFull ? "text-danger" : ""}  p-0`}
-              >
-                {showFull ? "Show Less" : "Show More"}
-              </a>
-            </div>
-          </div>
-        )}
-      </div>
-      {coin && (
-        <CoinConversionTable coinValue={coin?.market_data.current_price.usd} />
+
+      {!isLoading && coinToUsdRate && (
+        <CoinConversionTable coinValue={coinToUsdRate} />
       )}
     </div>
   );

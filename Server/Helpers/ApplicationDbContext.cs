@@ -14,6 +14,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<AccessToken> AccessTokens { get; set; }
     public DbSet<Wallet> Wallets { get; set; }
     public DbSet<Asset> Assets { get; set; }
+    public DbSet<SystemCoin> SystemCoins { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -32,6 +33,9 @@ public class ApplicationDbContext : DbContext
 
         modelBuilder.Entity<Wallet>()
             .HasMany(w => w.Assets).WithOne(a => a.Wallet).HasForeignKey(a => a.WalletId);
+
+        modelBuilder.Entity<Asset>()
+            .HasOne(a => a.SystemCoin).WithOne(s => s.Asset).HasForeignKey<Asset>(a => a.CoinId);
     }
 }
 

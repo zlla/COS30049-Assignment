@@ -56,12 +56,15 @@ namespace Server.Migrations
 
                     b.Property<string>("CoinId")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasColumnType("varchar(255)");
 
                     b.Property<long>("WalletId")
                         .HasColumnType("bigint");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CoinId")
+                        .IsUnique();
 
                     b.HasIndex("WalletId");
 
@@ -92,6 +95,26 @@ namespace Server.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("RefreshTokens");
+                });
+
+            modelBuilder.Entity("Server.Models.SystemCoin", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<ulong>("Price")
+                        .HasColumnType("bigint unsigned");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("SystemCoins");
                 });
 
             modelBuilder.Entity("Server.Models.User", b =>
@@ -172,11 +195,19 @@ namespace Server.Migrations
 
             modelBuilder.Entity("Server.Models.Asset", b =>
                 {
+                    b.HasOne("Server.Models.SystemCoin", "SystemCoin")
+                        .WithOne("Asset")
+                        .HasForeignKey("Server.Models.Asset", "CoinId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("Server.Models.Wallet", "Wallet")
                         .WithMany("Assets")
                         .HasForeignKey("WalletId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("SystemCoin");
 
                     b.Navigation("Wallet");
                 });
@@ -206,6 +237,11 @@ namespace Server.Migrations
             modelBuilder.Entity("Server.Models.RefreshToken", b =>
                 {
                     b.Navigation("AccessTokens");
+                });
+
+            modelBuilder.Entity("Server.Models.SystemCoin", b =>
+                {
+                    b.Navigation("Asset");
                 });
 
             modelBuilder.Entity("Server.Models.User", b =>
