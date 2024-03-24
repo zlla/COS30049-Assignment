@@ -24,6 +24,7 @@ function App() {
   const [auth, setAuth] = useState(!!initialToken);
   const [instance, setInstance] = useState(null);
   const [web3, setWeb3] = useState(null);
+  const [userInfo, setUserInfo] = useState(null);
 
   const fetchNewToken = async () => {
     const accessToken = localStorage.getItem("accessToken");
@@ -124,11 +125,40 @@ function App() {
     loadWeb3();
   }, []);
 
+  useEffect(() => {
+    const getUserInfo = async () => {
+      const config = {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+        },
+      };
+
+      try {
+        const response = await axios.get(`${apiUrl}/user/GetUser`, config);
+        setUserInfo(response.data);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    if (auth) {
+      getUserInfo();
+    }
+  }, [auth]);
+
   return (
     <BrowserRouter>
       <Routes>
         <Route
-          element={<NavBar coinId={coinId} auth={auth} setAuth={setAuth} />}
+          element={
+            <NavBar
+              coinId={coinId}
+              auth={auth}
+              setAuth={setAuth}
+              userInfo={userInfo}
+              setUserInfo={setUserInfo}
+            />
+          }
         >
           <Route element={<Footer />}>
             <Route path="/" element={<Home />} />
@@ -171,7 +201,12 @@ function App() {
                 )
               }
             />
-            <Route path="/account" element={<Account />} />
+            <Route
+              path="/account"
+              element={
+                auth ? <Account auth={auth} /> : <Navigate to="/auth/login" />
+              }
+            />
           </Route>
         </Route>
       </Routes>

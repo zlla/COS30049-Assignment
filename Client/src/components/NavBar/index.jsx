@@ -1,7 +1,8 @@
 import { Outlet, NavLink } from "react-router-dom";
 import { GiWallet } from "react-icons/gi";
+import { FaRegUserCircle } from "react-icons/fa";
 
-const NavBar = ({ coinId, auth, setAuth }) => {
+const NavBar = ({ coinId, auth, setAuth, userInfo, setUserInfo }) => {
   return (
     <div>
       <nav className="navbar navbar-expand-lg bg-primary" data-bs-theme="dark">
@@ -61,6 +62,7 @@ const NavBar = ({ coinId, auth, setAuth }) => {
                           setAuth(false);
                           localStorage.removeItem("accessToken");
                           localStorage.removeItem("refreshToken");
+                          setUserInfo(null);
                         }}
                       >
                         Logout
@@ -89,14 +91,27 @@ const NavBar = ({ coinId, auth, setAuth }) => {
                 </div>
               </li>
             </ul>
-            <div>
-              <NavLink
-                to={"/wallet"}
-                className="nav-link text-bg-primary my-auto me-sm-2 d-flex justify-content-between"
-              >
-                <GiWallet style={{ fontSize: "24px" }} className="me-2" />{" "}
-                Wallet
-              </NavLink>
+            <div className="d-flex">
+              {auth && (
+                <NavLink
+                  to={"/wallet"}
+                  style={{ fontSize: "24px" }}
+                  className="nav-link text-bg-primary my-auto me-4"
+                >
+                  <GiWallet className="me-2" />
+                  Wallet
+                </NavLink>
+              )}
+              {userInfo && (
+                <NavLink
+                  style={{ fontSize: "24px" }}
+                  className="nav-link text-bg-primary my-auto me-sm-2"
+                  to={"/account"}
+                >
+                  <FaRegUserCircle className="me-2" />
+                  {userInfo != null ? userInfo["username"] : ""}
+                </NavLink>
+              )}
             </div>
           </div>
         </div>

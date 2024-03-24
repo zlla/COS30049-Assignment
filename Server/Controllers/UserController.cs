@@ -55,8 +55,8 @@ namespace Server.Controllers
             return userFromDb;
         }
 
-        [HttpGet("getAll")]
-        public async Task<IActionResult> GetAll([FromQuery] string temp)
+        [HttpGet("GetUser")]
+        public async Task<IActionResult> GetUser()
         {
             User? userFromDb = await GetUserFromAccessToken();
             if (userFromDb == null)
@@ -64,17 +64,18 @@ namespace Server.Controllers
                 return NotFound("User not found");
             }
 
-            ReturnUser temp1 = new()
+            UserModule usermodule = new()
             {
                 Username = userFromDb.Username,
-                Email = userFromDb.Email
+                Email = userFromDb.Email,
+                Name = userFromDb.Username,
             };
 
-            return Ok(temp1);
+            return Ok(usermodule);
         }
 
-        [HttpPost("updateUser")]
-        public async Task<IActionResult> UpdateUser([FromBody] Request request)
+        [HttpPost("EditUser")]
+        public async Task<IActionResult> EditUser([FromBody] UpdateModule request)
         {
             User? userFromDb = await GetUserFromAccessToken();
             if (userFromDb == null)
@@ -82,7 +83,9 @@ namespace Server.Controllers
                 return NotFound("User not found");
             }
 
-            userFromDb.Username = request.NewName;
+            if (request.Username != null) userFromDb.Username = request.Username;
+            if (request.Name != null) userFromDb.Name = request.Name;
+            if (request.Password != null) userFromDb.Password = BCrypt.Net.BCrypt.HashPassword(request.Password);
 
             _db.Users.Update(userFromDb);
             await _db.SaveChangesAsync();
@@ -91,14 +94,18 @@ namespace Server.Controllers
         }
     }
 
-    public class ReturnUser
+    public class UserModule
     {
         public required string Username { get; set; }
+        public required string Name { get; set; }
         public required string Email { get; set; }
     }
 
-    public class Request
+    public class UpdateModule
     {
-        public required string NewName { get; set; }
+        public string? Username { get; set; }
+        public string? Name { get; set; }
+        public string? Email { get; set; }
+        public string? Password { get; set; }
     }
 }
