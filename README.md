@@ -18,6 +18,16 @@ step 8: (in docker container) cd PoA/node1/
 step 9: change IPAddress in command bellow into IPAddress from step 6
 step 10: geth --networkid 8888 --datadir ./data --port 30303 --ipcdisable --syncmode full --http --allow-insecure-unlock --http.corsdomain "*" --http.port 8545 --http.addr "172.17.0.2" --unlock 0x6eBB5C18FC0fA7E211245043CF4BA6B9CA392c42 --password ./password.txt --mine --http.api personal,admin,db,eth,net,web3,miner,shh,txpool,debug,clique --ws --ws.addr 0.0.0.0 --ws.port 8546 --ws.origins '*' --ws.api personal,admin,db,eth,net,web3,miner,shh,txpool,debug,clique --maxpeers 25 --miner.etherbase 0x6eBB5C18FC0fA7E211245043CF4BA6B9CA392c42 --miner.gasprice 0 --miner.gaslimit 9999999
 
+** important
+// in /app directory in docker container you must 
+cd contract-30049
+rm -rf build
+cd contracts
+truffle console --network AWS
+compile 
+migrate
+after that: copy ProMinTrader.json in /app/contract-30049/build to Client/src/smartcontracts
+
 step 11: open another terminal
 step 12: cd Client folder in zip file you have been downloaded
 step 13: npm install
