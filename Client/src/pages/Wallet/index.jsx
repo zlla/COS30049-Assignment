@@ -2,7 +2,6 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { apiUrl } from "../../settings/apiurl";
 import { unlockAccount } from "../../js/unlockWalletAddress";
-import { Alert } from "react-bootstrap";
 
 const Wallet = (props) => {
   const { web3, instance } = props;
@@ -120,42 +119,6 @@ const Wallet = (props) => {
     return formattedDate;
   }
 
-  const checkSameWallet = async () => {
-    try {
-      if (!window.ethereum) {
-        alert("MetaMask not detected. Please install MetaMask.");
-        return;
-      }
-
-      const accounts = await window.ethereum.request({
-        method: "eth_requestAccounts",
-      });
-      const walletAddress = accounts[0];
-
-      const config = {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-        },
-      };
-
-      await axios
-        .post(`${apiUrl}/wallet/isSameWallet`, { Value: walletAddress }, config)
-        .then(() => {
-          setWalletAddress(walletAddress);
-          setIsSyncWallet(true);
-        })
-        .catch((error) => {
-          if (error.response && error.response.data) {
-            alert(error.response.data);
-            setIsSyncWallet(false);
-            setWalletAddress("");
-          }
-        });
-    } catch (error) {
-      alert("An error occurred while checking wallet.");
-    }
-  };
-
   function formatCurrency(amount) {
     amount = parseFloat(amount);
     if (amount >= 1000000) {
@@ -167,6 +130,11 @@ const Wallet = (props) => {
     }
   }
 
+  const getBalance = async (web3, walletAddress) => {
+    const balance = await web3.eth.getBalance(walletAddress);
+    setBalance(balance);
+  };
+
   const showWalletDetails = async (e) => {
     e.preventDefault();
 
@@ -176,19 +144,19 @@ const Wallet = (props) => {
       },
     };
 
-    let tempAddress = "";
+    let responseAddress = "";
     try {
       const response = await axios.get(
         `${apiUrl}/wallet/getWalletAddress`,
         config
       );
-      tempAddress = response.data;
+      responseAddress = response.data;
     } catch (error) {
       console.log(error);
     }
 
     try {
-      await unlockAccount(web3, tempAddress);
+      await unlockAccount(web3, responseAddress);
     } catch (error) {
       alert("Wrong Password. Try again!");
       return;
@@ -206,19 +174,75 @@ const Wallet = (props) => {
   };
 
   const buyPRM = async () => {
-    // unlockAccount(web3, walletAddress);
+    if (web3 && instance && walletAddress !== "") {
+      const userInput = prompt(
+        "Please enter the amount of PRM you want to deposit:"
+      );
+      const intValue = parseInt(userInput);
 
-    if (web3) {
+      if (!isNaN(intValue) && intValue > 0) {
+        try {
+          await unlockAccount(web3, walletAddress);
+        } catch (error) {
+          alert("Failed to unlock account. Please try again later.");
+          return;
+        }
+
+        try {
+          await instance.sendToAddress(walletAddress, intValue, {
+            from: "0x6eBB5C18FC0fA7E211245043CF4BA6B9CA392c42",
+          });
+          getBalance(web3, walletAddress);
+          alert("Deposit successful.");
+        } catch (error) {
+          alert("Failed to deposit PRM. Please try again later.");
+        }
+      } else {
+        alert("Invalid input. Please enter a valid positive integer.");
+      }
+    }
+  };
+
+  const withdraw = async () => {
+    if (instance) {
       try {
-        let firstWallet = await web3.eth.getAccounts();
-        await web3.eth.sendTransaction({
-          to: walletAddress,
-          from: firstWallet[0],
-          value: 10000000000000000000,
+        await instance.sendToAddress(walletAddress, 50000, {
+          from: "0x6eBB5C18FC0fA7E211245043CF4BA6B9CA392c42",
         });
         alert("Ok");
       } catch (error) {
         console.log(error);
+      }
+    }
+  };
+
+  const deposit = async () => {
+    if (web3 && instance && walletAddress !== "") {
+      const userInput = prompt(
+        "Please enter the amount of PRM you want to deposit:"
+      );
+      const intValue = parseInt(userInput);
+
+      if (!isNaN(intValue) && intValue > 0) {
+        try {
+          await unlockAccount(web3, walletAddress);
+        } catch (error) {
+          alert("Failed to unlock account. Please try again later.");
+          return;
+        }
+
+        try {
+          await instance.deposit({
+            from: walletAddress,
+            value: intValue,
+          });
+          getBalance(web3, walletAddress);
+          alert("Deposit contract successful.");
+        } catch (error) {
+          alert("Failed to deposit contract. Please try again later.");
+        }
+      } else {
+        alert("Invalid input. Please enter a valid positive integer.");
       }
     }
   };
@@ -230,36 +254,68 @@ const Wallet = (props) => {
       },
     };
 
-    const fetchWallet = async () => {
+    const fetchWalletAndAssets = async () => {
       try {
         await axios.get(`${apiUrl}/wallet/checkWalletExist`, config);
         setWalletCheck(true);
+        const response = await axios.get(`${apiUrl}/asset/getAssets`, config);
+        setAssets(response.data);
       } catch (error) {
         setWalletCheck(false);
       }
     };
 
-    const fetchAssets = async () => {
+    fetchWalletAndAssets();
+  }, [walletAddress]);
+
+  useEffect(() => {
+    const checkSameWallet = async () => {
       try {
-        const response = await axios.get(`${apiUrl}/asset/getAssets`, config);
-        setAssets(response.data);
+        if (!window.ethereum) {
+          alert("MetaMask not detected. Please install MetaMask.");
+          return;
+        }
+
+        const accounts = await window.ethereum.request({
+          method: "eth_requestAccounts",
+        });
+        const walletAddress = accounts[0];
+
+        const config = {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          },
+        };
+
+        await axios
+          .post(
+            `${apiUrl}/wallet/isSameWallet`,
+            { Value: walletAddress },
+            config
+          )
+          .then(() => {
+            setWalletAddress(walletAddress);
+            setIsSyncWallet(true);
+          })
+          .catch((error) => {
+            if (error.response && error.response.data) {
+              alert(error.response.data);
+              setWalletAddress("");
+              setIsSyncWallet(false);
+            }
+          });
       } catch (error) {
-        console.log(error);
+        alert("An error occurred while checking wallet.");
       }
     };
 
-    fetchWallet();
-    fetchAssets();
-  }, []);
-
-  useEffect(() => {
     if (walletCheck) {
       checkSameWallet();
     }
-  }, [walletCheck]);
+  }, [walletCheck, walletAddress]);
 
   useEffect(() => {
-    if (instance !== null && walletAddress !== "") {
+    if (instance !== null && walletAddress !== "" && isSyncWallet) {
       const fetchTransactions = async () => {
         try {
           let response = await instance.getTransactionsByWalletAddress(
@@ -275,16 +331,11 @@ const Wallet = (props) => {
 
       fetchTransactions();
     }
-  }, [instance, walletAddress]);
+  }, [instance, walletAddress, isSyncWallet]);
 
   useEffect(() => {
-    const getBalance = async () => {
-      const result = await web3.eth.getBalance(walletAddress);
-      setBalance(result);
-    };
-
-    if (isSyncWallet === true && walletAddress !== "") {
-      getBalance();
+    if (isSyncWallet && walletAddress !== "" && web3 != null) {
+      getBalance(web3, walletAddress);
     }
   }, [web3, isSyncWallet, walletAddress]);
 
@@ -309,10 +360,10 @@ const Wallet = (props) => {
       }
     };
 
-    if (isSyncWallet === true) {
+    if (isSyncWallet && walletAddress !== "") {
       syncBalance();
     }
-  }, [balance, isSyncWallet]);
+  }, [balance, isSyncWallet, walletAddress]);
 
   useEffect(() => {
     if (walletDetails.walletAddress && walletDetails.walletAddress !== "") {
@@ -321,6 +372,26 @@ const Wallet = (props) => {
       }, 30000);
     }
   }, [walletDetails]);
+
+  useEffect(() => {
+    const intervalId = setInterval(async () => {
+      if (walletAddress === "") {
+        if (!window.ethereum) {
+          alert("MetaMask not detected. Please install MetaMask.");
+          return;
+        }
+
+        const accounts = await window.ethereum.request({
+          method: "eth_requestAccounts",
+        });
+        const walletAddress = accounts[0];
+
+        setWalletAddress(walletAddress);
+      }
+    }, 10000);
+
+    return () => clearInterval(intervalId);
+  }, [walletAddress]);
 
   return (
     <>
@@ -333,7 +404,7 @@ const Wallet = (props) => {
                 <b className="me-2">{formatCurrency(balance)}</b>PRM
                 <button
                   className="ms-2 btn btn-success"
-                  onClick={() => buyPRM()}
+                  onClick={(e) => buyPRM(e)}
                 >
                   +
                 </button>
@@ -374,8 +445,18 @@ const Wallet = (props) => {
               )}
             </div>
             <div>
-              <button className="btn btn-primary mx-1">deposit</button>
-              <button className="btn btn-primary mx-1">withdraw</button>
+              <button
+                className="btn btn-primary mx-1"
+                onClick={() => deposit()}
+              >
+                deposit
+              </button>
+              <button
+                className="btn btn-primary mx-1"
+                onClick={() => withdraw()}
+              >
+                withdraw
+              </button>
               <button className="btn btn-primary mx-1">transfer</button>
             </div>
           </div>

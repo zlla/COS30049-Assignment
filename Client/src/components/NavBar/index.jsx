@@ -1,9 +1,7 @@
-import { useState } from "react";
 import { Outlet, NavLink } from "react-router-dom";
+import { GiWallet } from "react-icons/gi";
 
 const NavBar = ({ coinId, auth, setAuth }) => {
-  const [amountCoin, setAmountCoin] = useState(1000);
-
   return (
     <div>
       <nav className="navbar navbar-expand-lg bg-primary" data-bs-theme="dark">
@@ -91,23 +89,15 @@ const NavBar = ({ coinId, auth, setAuth }) => {
                 </div>
               </li>
             </ul>
-            <form className="d-flex">
+            <div>
               <NavLink
                 to={"/wallet"}
-                className="nav-link text-bg-primary my-auto me-sm-2"
+                className="nav-link text-bg-primary my-auto me-sm-2 d-flex justify-content-between"
               >
-                <span className="fw-bold me-2">{amountCoin} PRM</span>
-                <span className="badge bg-success">Available Balance</span>
+                <GiWallet style={{ fontSize: "24px" }} className="me-2" />{" "}
+                Wallet
               </NavLink>
-              <input
-                className="form-control me-sm-2"
-                type="search"
-                placeholder="Search"
-              />
-              <button className="btn btn-secondary my-2 my-sm-0" type="submit">
-                Search
-              </button>
-            </form>
+            </div>
           </div>
         </div>
       </nav>

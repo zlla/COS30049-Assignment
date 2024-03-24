@@ -55,6 +55,7 @@ const BuySellPage = (props) => {
     setSelectedCoinId(coin.id);
     setSelectedCoinName(coin.name);
     setCoinToUsdRate(coin.price);
+    setUsdAmount(Math.ceil(coin.price * coinAmount));
     setFilteredCoins([]);
 
     const coinInput = document.getElementById("coinSearch");
@@ -136,6 +137,19 @@ const BuySellPage = (props) => {
             }
           );
         } else {
+          try {
+            await axios.post(
+              `${apiUrl}/asset/sell`,
+              { AssetId: selectedCoinId, AssetAmount: coinAmount },
+              config
+            );
+          } catch (error) {
+            if (error.response.data) {
+              alert(error.response.data);
+            }
+            return;
+          }
+
           await instance.addTransaction(
             walletAddress,
             selectedCoinId,
@@ -143,7 +157,7 @@ const BuySellPage = (props) => {
             usdAmount,
             action,
             {
-              from: walletAddress,
+              from: "0x6eBB5C18FC0fA7E211245043CF4BA6B9CA392c42",
             }
           );
         }
@@ -156,13 +170,15 @@ const BuySellPage = (props) => {
             );
 
             if (response.data === true) {
-              const Amount = {
+              const request = {
+                AssetId: selectedCoinId,
                 Amount: coinAmount,
+                Action: action,
               };
 
               await axios.post(
                 `${apiUrl}/asset/updateAmountOfAsset`,
-                Amount,
+                request,
                 config
               );
             } else {
@@ -180,7 +196,21 @@ const BuySellPage = (props) => {
           }
         };
 
-        await checkCoinExistInDb();
+        if (action === "buy") {
+          await checkCoinExistInDb();
+        } else if (action === "sell") {
+          const request = {
+            AssetId: selectedCoinId,
+            Amount: coinAmount,
+            Action: action,
+          };
+
+          await axios.post(
+            `${apiUrl}/asset/updateAmountOfAsset`,
+            request,
+            config
+          );
+        }
         alert("Transaction added successfully.");
       } catch (error) {
         console.log(error);

@@ -15,14 +15,16 @@ const SignUp = () => {
     e.preventDefault();
 
     try {
-      const response = await axios.post(`${apiUrl}/register`, {
+      await axios.post(`${apiUrl}/register`, {
         email,
         username,
         password,
       });
 
-      console.log(response);
+      alert("Successfully!");
+      navigate("/auth/login");
     } catch (error) {
+      alert("Unexpected Error, Try Again!");
       console.log(error);
     }
   };
@@ -81,7 +83,16 @@ const SignUp = () => {
 
         <div className="text-center">
           <p>
-            Already have an account? <a href="/auth/login">Login</a>
+            Already have an account?{" "}
+            <a
+              href="#"
+              onClick={(e) => {
+                e.preventDefault();
+                navigate("/auth/login");
+              }}
+            >
+              Login
+            </a>
           </p>
           <p>or sign up with:</p>
           <div className="btn-group">

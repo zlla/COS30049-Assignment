@@ -26,7 +26,7 @@ const LogIn = (props) => {
       navigate("/wallet");
     } catch (error) {
       setAuth(false);
-      console.error(error);
+      alert("Unexpected Error, Try Again!");
     }
   };
 
@@ -94,7 +94,16 @@ const LogIn = (props) => {
 
         <div className="text-center">
           <p>
-            Not a member? <a href="/auth/register">Register</a>
+            Not a member?{" "}
+            <a
+              href="#"
+              onClick={(e) => {
+                e.preventDefault();
+                navigate("/auth/register");
+              }}
+            >
+              Register
+            </a>
           </p>
           <p>or sign up with:</p>
           <div className="btn-group">

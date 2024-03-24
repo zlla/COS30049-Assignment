@@ -100,7 +100,7 @@ namespace Server.Controllers
         }
 
         [HttpPost("updateAmountOfAsset")]
-        public async Task<IActionResult> UpdateAmountOfAsset([FromBody] UpdateAmountOfAssetRequest amount)
+        public async Task<IActionResult> UpdateAmountOfAsset([FromBody] UpdateAmountOfAssetRequest request)
         {
             User? userFromDb = await GetUserFromAccessToken();
             if (userFromDb == null)
@@ -111,10 +111,24 @@ namespace Server.Controllers
             Wallet? wallet = await _db.Wallets.Where(w => w.UserId == userFromDb.Id).FirstOrDefaultAsync();
             if (wallet == null) return NotFound("Wallet Not Exist");
 
-            Asset? assetFromDb = await _db.Assets.Where(a => a.WalletId == wallet.Id).FirstOrDefaultAsync();
+            Asset? assetFromDb = await _db.Assets.Where(a => a.WalletId == wallet.Id && a.CoinId == request.AssetId).FirstOrDefaultAsync();
             if (assetFromDb == null) return NotFound("Asset Not Exist");
 
-            assetFromDb.Amount += amount.Amount;
+            if (request.Action.ToLower() == "buy")
+            {
+                assetFromDb.Amount += request.Amount;
+            }
+            else if (request.Action.ToLower() == "sell")
+            {
+                if (assetFromDb.Amount >= request.Amount)
+                {
+                    assetFromDb.Amount -= request.Amount;
+                }
+            }
+            else
+            {
+                return BadRequest("Invalid action");
+            }
 
             _db.Assets.Update(assetFromDb);
             await _db.SaveChangesAsync();
@@ -139,10 +153,46 @@ namespace Server.Controllers
 
             return Ok(assets);
         }
+
+        [HttpPost("sell")]
+        public async Task<IActionResult> SellAsset([FromBody] SellAssetRequest request)
+        {
+            User? userFromDb = await GetUserFromAccessToken();
+            if (userFromDb == null)
+            {
+                return NotFound("User not found");
+            }
+
+            Wallet? userWallet = await _db.Wallets.Where(w => w.UserId == userFromDb.Id).FirstOrDefaultAsync();
+            if (userWallet == null)
+            {
+                return NotFound("Wallet not found");
+            }
+
+            Asset? userAsset = await _db.Assets.Where(a => a.CoinId == request.AssetId && a.WalletId == userWallet.Id).FirstOrDefaultAsync();
+            if (userAsset == null)
+            {
+                return NotFound("You don't have this Asset");
+            }
+            if (userAsset.Amount < request.AssetAmount)
+            {
+                return BadRequest("Invalid Asset Amount");
+            }
+
+            return Ok();
+        }
     }
 
     public class UpdateAmountOfAssetRequest
     {
+        public required string AssetId { get; set; }
         public ulong Amount { get; set; }
+        public required string Action { get; set; }
+    }
+
+    public class SellAssetRequest
+    {
+        public required string AssetId { get; set; }
+        public required ulong AssetAmount { get; set; }
     }
 }
