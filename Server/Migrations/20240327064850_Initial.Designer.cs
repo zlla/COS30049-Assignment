@@ -11,7 +11,7 @@ using Server.Helpers;
 namespace Server.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240323173848_Initial")]
+    [Migration("20240327064850_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -115,6 +115,41 @@ namespace Server.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("SystemCoins");
+                });
+
+            modelBuilder.Entity("Server.Models.Transaction", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Amount")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("AssetId")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("From")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("To")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("TotalPrice")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("TransactionType")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Transactions");
                 });
 
             modelBuilder.Entity("Server.Models.User", b =>

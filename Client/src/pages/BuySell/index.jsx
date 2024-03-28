@@ -211,6 +211,16 @@ const BuySellPage = (props) => {
             config
           );
         }
+
+        const transactionToDb = {
+          AssetId: selectedCoinId,
+          From: walletAddress,
+          To: instance.address,
+          Amount: coinAmount.toString(),
+          TotalPrice: usdAmount.toString(),
+          TransactionType: action,
+        };
+        await axios.post(`${apiUrl}/Transaction`, transactionToDb, config);
         alert("Transaction added successfully.");
       } catch (error) {
         console.log(error);

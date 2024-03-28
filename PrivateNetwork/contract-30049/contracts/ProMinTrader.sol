@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.5.16 <0.9.0;
 
+pragma experimental ABIEncoderV2;
+
 contract ProMinTrader {
     struct Transaction {
         uint256 id;
@@ -68,64 +70,38 @@ contract ProMinTrader {
         transactionsByAddress[_walletAddress].push(transactionCount); // Update mapping
         transactionCount++;
 
-        if (
-            keccak256(abi.encodePacked(_transactionType)) ==
-            keccak256(abi.encodePacked("buy"))
-        ) {
-            require(msg.value >= _totalPrice, "Insufficient payment");
-
-            if (msg.value > _totalPrice) {
-                msg.sender.transfer(msg.value - _totalPrice);
+        if (keccak256(abi.encodePacked(_transactionType)) == keccak256(abi.encodePacked("buy"))) {
+                require(msg.value >= _totalPrice, "Insufficient payment");
+            
+                if (msg.value > _totalPrice) {
+                    msg.sender.transfer(msg.value - _totalPrice);
+                }
             }
-        } else if (
-            keccak256(abi.encodePacked(_transactionType)) ==
-            keccak256(abi.encodePacked("sell"))
-        ) {
-            require(
-                _totalPrice <= address(this).balance,
-                "Insufficient balance in contract"
-            );
+        else if (keccak256(abi.encodePacked(_transactionType)) == keccak256(abi.encodePacked("sell"))) {
+            require(_totalPrice <= address(this).balance, "Insufficient balance in contract");
             _walletAddress.transfer(_totalPrice);
         }
     }
 
-    function getTransaction(
-        uint256 _transactionId
-    )
-        public
-        view
-        returns (
-            uint256 id,
-            address walletAddress,
-            string memory coinId,
-            uint256 amount,
-            uint256 timestamp,
-            string memory transactionType
-        )
-    {
-        require(
-            _transactionId < transactions.length,
-            "Transaction ID does not exist"
-        );
-
-        Transaction memory transaction = transactions[_transactionId];
-
-        id = transaction.id;
-        walletAddress = transaction.walletAddress;
-        coinId = transaction.coinId;
-        amount = transaction.amount;
-        timestamp = transaction.timestamp;
-        transactionType = transaction.transactionType;
+    function getTransactionById(uint256 _transactionId) public view returns (Transaction memory) {
+        require(_transactionId < transactions.length, "Transaction ID does not exist");
+        return transactions[_transactionId];
     }
-
-    function getTransactionsByAddress(
-        address _walletAddress
-    ) public view returns (uint256[] memory) {
+    
+    function getIdTransactionsByAddress(address _walletAddress) public view returns (uint256[] memory) {
         return transactionsByAddress[_walletAddress];
     }
 
-    // function transferToAddress(address payable _receiver, uint _amount) public {
-    //     require(_amount <= address(this).balance, "Insufficient balance in contract");
-    //     _receiver.transfer(_amount);
-    // }
+    function getTransactionsByWalletAddress(address _walletAddress) public view returns (Transaction[] memory) {
+        uint256[] memory transactionIds = getIdTransactionsByAddress(_walletAddress);
+        Transaction[] memory userTransactions = new Transaction[](transactionIds.length);
+
+        for (uint256 i = 0; i < transactionIds.length; i++) {
+            userTransactions[i] = transactions[transactionIds[i]];
+        }
+
+        return userTransactions;
+    }
+
 }
+

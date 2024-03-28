@@ -114,6 +114,41 @@ namespace Server.Migrations
                     b.ToTable("SystemCoins");
                 });
 
+            modelBuilder.Entity("Server.Models.Transaction", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Amount")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("AssetId")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("From")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("To")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("TotalPrice")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("TransactionType")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Transactions");
+                });
+
             modelBuilder.Entity("Server.Models.User", b =>
                 {
                     b.Property<long>("Id")
